@@ -1,0 +1,83 @@
+# ============================================================
+#  UForum — docker-compose unificado
+#  Uso: docker compose up --build
+#  Frontend: http://localhost:3000
+#  Backend:  http://localhost:8080
+#  Swagger:  http://localhost:8080/swagger-ui.html
+#  Admin:    admin@ufam.edu.br / Admin@12345
+# ============================================================
+
+services:
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: uforum-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: uforum_db
+      POSTGRES_USER: uforum_user
+      POSTGRES_PASSWORD: uforum_pass
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U uforum_user -d uforum_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - uforum-net
+
+  backend:
+    build:
+      context: ./uforum-backend
+      dockerfile: Dockerfile
+    container_name: uforum-backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: uforum_db
+      DB_USER: uforum_user
+      DB_PASSWORD: uforum_pass
+      JWT_SECRET: uforum-super-secret-key-must-be-at-least-32-chars-long
+      JWT_EXPIRATION: 86400000
+      JWT_REFRESH_EXP: 604800000
+      SERVER_PORT: 8080
+      FRONTEND_URL: http://localhost:3000
+    volumes:
+      - uploads_data:/app/uploads
+    networks:
+      - uforum-net
+    healthcheck:
+      # Verifica se a porta 8080 está aberta — não precisa de Actuator nem curl
+      test: ["CMD-SHELL", "nc -z localhost 8080 || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
+
+  frontend:
+    build:
+      context: ./uforum-frontend
+      dockerfile: Dockerfile
+    container_name: uforum-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8080/api/v1
+    networks:
+      - uforum-net
+
+networks:
+  uforum-net:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  uploads_data:

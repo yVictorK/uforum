@@ -1,0 +1,223 @@
+@import 'leaflet/dist/leaflet.css';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Root Variables ─────────────────────────────────────────── */
+:root {
+  --green: #00c44f;
+  --green-dim: rgba(0, 196, 79, 0.12);
+  --green-border: rgba(0, 196, 79, 0.25);
+  --bg-base: #0d0d0d;
+  --bg-card: #161616;
+  --bg-elevated: #1e1e1e;
+  --bg-hover: #222222;
+  --border: rgba(255, 255, 255, 0.07);
+  --border-strong: rgba(255, 255, 255, 0.12);
+  --text-primary: #f0f0f0;
+  --text-secondary: #a0a0a0;
+  --text-muted: #606060;
+  --red: #ff4545;
+  --red-dim: rgba(255, 69, 69, 0.12);
+}
+
+/* ── Base ────────────────────────────────────────────────────── */
+@layer base {
+  * { @apply border-[rgba(255,255,255,0.07)]; }
+  
+  html { 
+    scroll-behavior: smooth;
+    background: var(--bg-base);
+  }
+
+  body {
+    background: var(--bg-base);
+    color: var(--text-primary);
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  ::selection {
+    background: rgba(0, 196, 79, 0.3);
+    color: #fff;
+  }
+
+  ::-webkit-scrollbar { @apply w-1 h-1; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 99px; }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.18); }
+}
+
+/* ── Component Classes ───────────────────────────────────────── */
+@layer components {
+
+  /* Cards */
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    box-shadow: var(--shadow-card, 0 1px 0 rgba(255,255,255,0.04));
+  }
+  .card-hover {
+    @apply card transition-all duration-200;
+  }
+  .card-hover:hover {
+    background: var(--bg-elevated);
+    border-color: var(--border-strong);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    transform: translateY(-1px);
+  }
+
+  /* Buttons */
+  .btn-green {
+    @apply inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm
+           transition-all duration-150 select-none cursor-pointer outline-none
+           disabled:opacity-40 disabled:cursor-not-allowed;
+    background: var(--green);
+    color: #000;
+  }
+  .btn-green:hover:not(:disabled) { background: #00e85a; box-shadow: 0 0 20px rgba(0,196,79,0.35); }
+  .btn-green:active:not(:disabled) { transform: scale(0.97); }
+
+  .btn-outline {
+    @apply inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm
+           transition-all duration-150 select-none cursor-pointer outline-none
+           disabled:opacity-40 disabled:cursor-not-allowed;
+    border: 1px solid var(--border-strong);
+    color: var(--text-primary);
+    background: transparent;
+  }
+  .btn-outline:hover:not(:disabled) { background: var(--bg-hover); border-color: rgba(255,255,255,0.2); }
+
+  .btn-ghost {
+    @apply inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium
+           transition-all duration-150 cursor-pointer select-none outline-none;
+    color: var(--text-secondary);
+  }
+  .btn-ghost:hover { background: var(--bg-hover); color: var(--text-primary); }
+
+  .btn-danger {
+    @apply inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm
+           transition-all duration-150 disabled:opacity-40;
+    background: rgba(255,69,69,0.15);
+    color: #ff6b6b;
+    border: 1px solid rgba(255,69,69,0.2);
+  }
+  .btn-danger:hover { background: rgba(255,69,69,0.25); }
+
+  /* Inputs */
+  .input {
+    @apply w-full px-4 py-3 rounded-xl text-sm outline-none transition-all duration-150;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+  }
+  .input::placeholder { color: var(--text-muted); }
+  .input:focus {
+      border-color: var(--green-border);
+      box-shadow: 0 0 0 3px var(--green-dim);
+  }
+
+  .label {
+    @apply block text-xs font-semibold uppercase tracking-wider mb-2;
+    color: var(--text-muted);
+  }
+
+  /* Badge */
+  .badge {
+    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold;
+  }
+  .badge-green {
+    @apply badge;
+    background: var(--green-dim);
+    color: var(--green);
+    border: 1px solid var(--green-border);
+  }
+  .badge-red {
+    @apply badge;
+    background: var(--red-dim);
+    color: #ff7070;
+    border: 1px solid rgba(255,69,69,0.2);
+  }
+  .badge-zinc {
+    @apply badge;
+    background: rgba(255,255,255,0.06);
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
+  }
+
+  /* Vote buttons */
+  .vote-btn {
+    @apply flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold
+           transition-all duration-150 cursor-pointer select-none;
+    color: var(--text-muted);
+  }
+  .vote-btn:hover { background: var(--bg-hover); color: var(--text-secondary); }
+  .vote-up-active {
+    background: var(--green-dim) !important;
+    color: var(--green) !important;
+    border: 1px solid var(--green-border);
+  }
+  .vote-down-active {
+    background: var(--red-dim) !important;
+    color: #ff7070 !important;
+    border: 1px solid rgba(255,69,69,0.2);
+  }
+
+  /* Skeleton */
+  .skeleton {
+    border-radius: 8px;
+    background: linear-gradient(
+      90deg,
+      rgba(255,255,255,0.04) 0%,
+      rgba(255,255,255,0.08) 50%,
+      rgba(255,255,255,0.04) 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.8s linear infinite;
+  }
+
+  /* Layout */
+  .page-wrap { @apply max-w-6xl mx-auto px-4 sm:px-6; }
+  .feed-wrap { @apply max-w-3xl mx-auto px-4 sm:px-6; }
+
+  /* Divider */
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+  }
+
+  /* Green text */
+  .text-green { color: var(--green); }
+  .text-muted { color: var(--text-muted); }
+  .text-secondary { color: var(--text-secondary); }
+
+  /* Scrollable row */
+  .scroll-row {
+    @apply flex gap-3 overflow-x-auto pb-2;
+    scrollbar-width: none;
+  }
+  .scroll-row::-webkit-scrollbar { display: none; }
+
+  /* Glass effect */
+  .glass {
+    background: rgba(13, 13, 13, 0.85);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* Green dot indicator */
+  .dot-green {
+    @apply w-2 h-2 rounded-full flex-shrink-0;
+    background: var(--green);
+    box-shadow: 0 0 6px var(--green);
+  }
+}
+
+@layer utilities {
+  .no-scrollbar { scrollbar-width: none; }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .text-balance { text-wrap: balance; }
+}
