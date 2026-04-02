@@ -1,5 +1,5 @@
 'use client'
-import { use, useState } from 'react'
+import { use, useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from '@tanstack/react-query'
 import { UserCheck, UserPlus, Edit3, MapPin, BookOpen, Calendar, FileText, Package, CalendarDays, Camera } from 'lucide-react'
 import { Avatar } from '@/components/ui/Avatar'
@@ -7,10 +7,10 @@ import { PostCard } from '@/components/post/PostCard'
 import { ProductCard } from '@/components/marketplace/ProductCard'
 import { Modal } from '@/components/ui/index'
 import { Sk } from '@/components/ui/index'
-import { usersApi, marketplaceApi } from '@/lib/api'
+import { usersApi, marketplaceApi, eventsApi } from '@/lib/api'
 import { useAuthStore } from '@/store/auth'
 import { roleLabel, fmtNum, fmtDate, cn } from '@/lib/utils'
-import type { Post, Product, Page } from '@/types'
+import type { Post, Product, Event, Page } from '@/types'
 import { useForm } from 'react-hook-form'
 import toast from 'react-hot-toast'
 import { z } from 'zod'
@@ -60,6 +60,14 @@ export default function ProfilePage({ params }: { params: Promise<{ username: st
     enabled: tab === 'products' && isOwn && !!profile,
   })
 
+  const { data: eventsData, isLoading: eLoading } = useInfiniteQuery({
+    queryKey: ['u-events', username],
+    queryFn: ({ pageParam = 0 }) => usersApi.getMyEvents(pageParam as number).then((r) => r.data),
+    initialPageParam: 0,
+    getNextPageParam: (last: Page<Event>) => last.last ? undefined : last.number + 1,
+    enabled: tab === 'events' && isOwn && !!profile,
+  })
+
   const followMut = useMutation({
     mutationFn: () => isFollowing ? usersApi.unfollow(username) : usersApi.follow(username),
     onSuccess: () => { setIsFollowing(!isFollowing); toast.success(isFollowing ? 'Deixou de seguir' : 'Seguindo!') },
@@ -92,6 +100,11 @@ export default function ProfilePage({ params }: { params: Promise<{ username: st
 
   const posts = postsData?.pages.flatMap((p) => p.content) ?? []
   const prods = prodsData?.pages.flatMap((p) => p.content) ?? []
+  const events = eventsData?.pages.flatMap((p) => p.content) ?? []
+
+  // BUG-03: Initialize isFollowing from backend profile data
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { if (profile) setIsFollowing(profile.isFollowing) }, [profile?.isFollowing])
 
   if (isLoading) return (
     <div className="page-wrap py-6 max-w-3xl space-y-4">
@@ -212,7 +225,21 @@ export default function ProfilePage({ params }: { params: Promise<{ username: st
       )}
 
       {tab === 'events' && (
-        <div className="card p-8 text-center text-sm" style={{ color: 'rgba(255,255,255,0.25)' }}>Eventos confirmados aparecerão aqui</div>
+        isOwn ? (
+          eLoading ? <div className="space-y-3">{[...Array(2)].map((_, i) => <div key={i} className="h-32 skeleton rounded-xl" />)}</div>
+          : events.length === 0 ? <div className="card p-8 text-center text-sm" style={{ color: 'rgba(255,255,255,0.25)' }}>Nenhum evento confirmado</div>
+          : <div className="space-y-3">{events.map((e) => (
+              <div key={e.id} className="card p-4 flex items-center gap-3">
+                <CalendarDays className="w-5 h-5 flex-shrink-0" style={{ color: '#00c44f' }} />
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-sm truncate">{e.title}</p>
+                  <p className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>{e.location}</p>
+                </div>
+              </div>
+            ))}</div>
+        ) : (
+          <div className="card p-8 text-center text-sm" style={{ color: 'rgba(255,255,255,0.25)' }}>Eventos confirmados aparecerão aqui</div>
+        )
       )}
 
       {/* Edit Profile Modal */}

@@ -72,5 +72,4 @@ public class Community {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    public int getMemberCount() { return members != null ? members.size() : 0; }
 }

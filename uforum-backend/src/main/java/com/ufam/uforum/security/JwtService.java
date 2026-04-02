@@ -17,6 +17,9 @@ import java.util.function.Function;
 @Slf4j
 public class JwtService {
 
+    private static final String ISSUER = "uforum-api";
+    private static final String AUDIENCE = "uforum-frontend";
+
     @Value("${jwt.secret}")
     private String secretKey;
 
@@ -50,6 +53,8 @@ public class JwtService {
         return Jwts.builder()
             .claims(extraClaims)
             .subject(userDetails.getUsername())
+            .issuer(ISSUER)
+            .audience().add(AUDIENCE).and()
             .issuedAt(new Date(System.currentTimeMillis()))
             .expiration(new Date(System.currentTimeMillis() + expiration))
             .signWith(getSignInKey())
@@ -77,6 +82,8 @@ public class JwtService {
     private Claims extractAllClaims(String token) {
         return Jwts.parser()
             .verifyWith(getSignInKey())
+            .requireIssuer(ISSUER)
+            .requireAudience(AUDIENCE)
             .build()
             .parseSignedClaims(token)
             .getPayload();

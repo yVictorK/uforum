@@ -29,10 +29,26 @@ public class UserService {
             .orElseThrow(() -> new ResourceNotFoundException("Usuário autenticado não encontrado"));
     }
 
+    /**
+     * Safely get the current user — returns null if not authenticated or user not found.
+     */
+    public User safeGetCurrentUser() {
+        try {
+            var auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getPrincipal())) {
+                return null;
+            }
+            return getCurrentUser();
+        } catch (ResourceNotFoundException | org.springframework.security.core.AuthenticationException e) {
+            return null;
+        }
+    }
+
     public UserProfileResponse getProfile(String username) {
         User user = userRepository.findByUsername(username)
             .orElseThrow(() -> new ResourceNotFoundException("Usuário", username));
-        return toProfileResponse(user);
+        User currentUser = safeGetCurrentUser();
+        return toProfileResponse(user, currentUser);
     }
 
     @Transactional
@@ -53,7 +69,7 @@ public class UserService {
             user.getCurrentSubjects().addAll(req.currentSubjects());
         }
 
-        return toProfileResponse(userRepository.save(user));
+        return toProfileResponse(userRepository.save(user), user);
     }
 
     @Transactional
@@ -93,17 +109,23 @@ public class UserService {
         );
     }
 
-    private UserProfileResponse toProfileResponse(User user) {
+    private UserProfileResponse toProfileResponse(User user, User currentUser) {
         long postsCount = postRepository.countByAuthorId(user.getId());
-        // Usar COUNT queries em vez de carregar todas as entidades na memória
         long followersCount = userRepository.countFollowers(user.getId());
         long followingCount = userRepository.countFollowing(user.getId());
+
+        // BUG-03: Calculate isFollowing based on whether the current authenticated user follows this profile
+        boolean isFollowing = false;
+        if (currentUser != null && !currentUser.getId().equals(user.getId())) {
+            isFollowing = currentUser.getFollowing().contains(user);
+        }
+
         return new UserProfileResponse(
             user.getId(), user.getUsername(), user.getFullName(), user.getEmail(),
             user.getBio(), user.getCourse(), user.getSemester(), user.getAge(),
             user.getNeighborhood(), user.getProfilePictureUrl(), user.getBannerUrl(), user.getWhatsappNumber(),
             user.getCurrentSubjects(), followersCount, followingCount,
-            postsCount, user.getRole().name(), user.getCreatedAt()
+            postsCount, user.getRole().name(), isFollowing, user.getCreatedAt()
         );
     }
 }

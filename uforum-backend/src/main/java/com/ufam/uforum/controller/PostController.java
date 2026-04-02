@@ -48,8 +48,10 @@ public class PostController {
     @Operation(summary = "Pesquisar posts")
     public Page<PostResponse> search(@RequestParam String q,
         @RequestParam(defaultValue = "0") int page,
-        @RequestParam(defaultValue = "20") int size) {
-        return postService.search(q, PageRequest.of(page, size));
+        @RequestParam(defaultValue = "20") int size,
+        @RequestParam(defaultValue = "new") String sort) {
+        var sortBy = sort.equals("top") ? Sort.by("upvotesCount").descending() : Sort.by("createdAt").descending();
+        return postService.search(q, PageRequest.of(page, size, sortBy));
     }
 
     @PostMapping

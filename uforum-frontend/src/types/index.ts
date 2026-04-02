@@ -13,7 +13,7 @@ export interface UserProfile {
   age: number | null; neighborhood: string | null
   profilePictureUrl: string | null; bannerUrl: string | null; whatsappNumber: string | null
   currentSubjects: string[]; followersCount: number; followingCount: number
-  postsCount: number; role: Role; createdAt: string
+  postsCount: number; role: Role; isFollowing: boolean; createdAt: string
 }
 
 export interface Community {
@@ -24,7 +24,7 @@ export interface Community {
 
 export interface Post {
   id: string; title: string | null; content: string; imageUrl: string | null
-  author: UserSummary; communityId: string | null; communityName: string | null
+  author: UserSummary; communityId: string | null; communityName: string | null; communitySlug: string | null
   parentId: string | null; depth: number; upvotesCount: number; downvotesCount: number
   score: number; repliesCount: number; isDeleted: boolean; isPinned: boolean
   currentUserVote: VoteType | null; isSaved: boolean; createdAt: string; updatedAt: string

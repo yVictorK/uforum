@@ -103,12 +103,4 @@ public class User {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    // Helpers
-    public int getFollowersCount() {
-        return followers != null ? followers.size() : 0;
-    }
-
-    public int getFollowingCount() {
-        return following != null ? following.size() : 0;
-    }
 }

@@ -7,5 +7,5 @@ public record UserProfileResponse(
     String bio, String course, Integer semester, Integer age,
     String neighborhood, String profilePictureUrl, String bannerUrl, String whatsappNumber,
     List<String> currentSubjects, long followersCount, long followingCount,
-    long postsCount, String role, LocalDateTime createdAt
+    long postsCount, String role, boolean isFollowing, LocalDateTime createdAt
 ) {}

@@ -5,7 +5,7 @@ import { ArrowUp, ArrowDown, MessageSquare, Bookmark, BookmarkCheck, Share2, Mor
 import { cn, timeAgo, fmtNum } from '@/lib/utils'
 import { Avatar } from '@/components/ui/Avatar'
 import { useAuthStore } from '@/store/auth'
-import { postsApi } from '@/lib/api'
+import { postsApi, reportsApi } from '@/lib/api'
 import { useQueryClient } from '@tanstack/react-query'
 import type { Post } from '@/types'
 import { motion } from 'framer-motion'
@@ -84,7 +84,7 @@ export function PostCard({ post: init, onDelete, compact = false, showCommunity 
               {showCommunity && post.communityName && (
                 <>
                   <span>·</span>
-                  <Link href={`/communities/${post.communityId}`} className="text-[#00c44f] hover:underline font-medium">
+                  <Link href={`/communities/${post.communitySlug}`} className="text-[#00c44f] hover:underline font-medium">
                     {post.communityName}
                   </Link>
                 </>
@@ -117,7 +117,16 @@ export function PostCard({ post: init, onDelete, compact = false, showCommunity 
                   </button>
                 )}
                 {!isOwner && (
-                  <button className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-[#2a2a2a] transition-colors text-left"
+                  <button onClick={() => {
+                    setMenu(false)
+                    if (!isAuthenticated) { toast.error('Faça login para denunciar'); return }
+                    const reason = prompt('Motivo: SPAM, HARASSMENT, HATE_SPEECH, INAPPROPRIATE, MISINFORMATION, OTHER')
+                    if (!reason) return
+                    reportsApi.create({ targetId: post.id, targetType: 'POST', reason: reason.toUpperCase(), description: '' })
+                      .then(() => toast.success('Denúncia enviada!'))
+                      .catch(() => toast.error('Erro ao denunciar'))
+                  }}
+                    className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-[#2a2a2a] transition-colors text-left"
                     style={{ color: 'var(--text-secondary)' }}>
                     <Flag className="w-3.5 h-3.5" />Denunciar
                   </button>

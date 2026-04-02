@@ -225,6 +225,7 @@ public class PostService {
             userService.toSummary(p.getAuthor()),
             p.getCommunity() != null ? p.getCommunity().getId() : null,
             p.getCommunity() != null ? p.getCommunity().getName() : null,
+            p.getCommunity() != null ? p.getCommunity().getSlug() : null,
             p.getParent() != null ? p.getParent().getId() : null,
             p.getDepth(), p.getUpvotesCount(), p.getDownvotesCount(),
             p.getScore(), p.getRepliesCount(), p.getIsDeleted(), p.getIsPinned(),
