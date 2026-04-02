@@ -3,7 +3,9 @@ import { useState, useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Search, MapPin, X, Navigation } from 'lucide-react'
 import dynamic from 'next/dynamic'
+import Link from 'next/link'
 import { mapApi } from '@/lib/api'
+import { useAuthStore } from '@/store/auth'
 import type { MapBlock } from '@/types'
 
 const LeafletMap = dynamic(() => import('@/components/map/LeafletMap'), {
@@ -22,6 +24,7 @@ export default function MapPage() {
   const [q, setQ] = useState('')
   const [selected, setSelected] = useState<MapBlock | null>(null)
   const [userPos, setUserPos] = useState<[number, number] | null>(null)
+  const { user } = useAuthStore()
 
   const { data: blocks = [], isLoading } = useQuery({
     queryKey: ['map-blocks', q],
@@ -31,15 +34,23 @@ export default function MapPage() {
   useEffect(() => {
     navigator.geolocation?.getCurrentPosition(
       (p) => setUserPos([p.coords.latitude, p.coords.longitude]),
-      () => {}
+      () => { }
     )
   }, [])
 
   return (
     <div className="page-wrap py-6">
-      <div className="mb-6">
-        <h1 className="text-2xl font-black">Mapa do Campus</h1>
-        <p className="text-sm mt-0.5" style={{ color: 'rgba(255,255,255,0.35)' }}>Encontre qualquer bloco da UFAM</p>
+      <div className="mb-6 flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-black">Mapa do Campus</h1>
+          <p className="text-sm mt-0.5" style={{ color: 'rgba(255,255,255,0.35)' }}>Encontre qualquer bloco da UFAM</p>
+        </div>
+
+        {user?.role === 'ADMIN' && (
+          <Link href="/admin/map" className="btn-green text-sm px-4 py-2 flex items-center gap-2">
+            <MapPin className="w-4 h-4" /> Configurar Mapa
+          </Link>
+        )}
       </div>
 
       <div className="flex gap-4 h-[580px]">

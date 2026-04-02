@@ -227,7 +227,7 @@ VALUES (
     'admin',
     'admin@ufam.edu.br',
     -- senha: Admin@12345 (BCrypt)
-    '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy',
+    '$2a$12$v4myNLOptqz1tTwVzqPeTOUo1jeGDGnP6LnuW4zggSuWvfScD22dy',
     '00000001',
     'Administrador UForum',
     'ADMIN',
@@ -238,16 +238,20 @@ VALUES (
 --  SEED: Blocos UFAM (coordenadas aproximadas do campus)
 -- ─────────────────────────────────────────────────────────────
 INSERT INTO map_blocks (name, code, description, latitude, longitude, floor_count) VALUES
-    ('Instituto de Computação', 'IComp', 'Instituto de Computação da UFAM', -3.0992, -59.9937, 3),
-    ('Faculdade de Tecnologia', 'FT',   'Faculdade de Tecnologia',          -3.1003, -59.9945, 4),
-    ('Instituto de Ciências Exatas', 'ICE', 'Instituto de Ciências Exatas', -3.0985, -59.9930, 2),
-    ('Biblioteca Central', 'BCT',  'Biblioteca Central da UFAM',            -3.0978, -59.9920, 3),
-    ('Reitoria', 'REIT', 'Prédio da Reitoria',                              -3.0970, -59.9910, 5),
-    ('Centro de Ciências do Ambiente', 'CCA', 'CCA - UFAM',                 -3.1010, -59.9950, 2),
+    ('Instituto de Computação - Bloco 1', 'IComp1', 'Instituto de Computação da UFAM', -3.0885052, -59.965307, 3),
+    ('Instituto de Computação - Bloco 2', 'IComp2', 'Instituto de Computação da UFAM', -3.08869, -59.9654358, 3),
+    ('Instituto de Computação - Bloco 3', 'IComp3', 'Instituto de Computação da UFAM', -3.0885067, -59.9650944,3),
+    ('Faculdade de Tecnologia', 'FT',   'Faculdade de Tecnologia',          -3.0882547, -59.9651637, 3),
+    ('Instituto de Ciências Exatas', 'ICE', 'Instituto de Ciências Exatas', -3.0886968, -59.965438, 3),
+    ('Biblioteca Setorial do Setor Norte', 'BSSN',  'Biblioteca Setorial do Setor Norte',            -3.0915937, -59.9636121, 3),
+    ('Biblioteca Setorial do Setor Sul', 'BSSN',  'Biblioteca Setorial do Setor Sul',            -3.1007016, -59.9779893, 3),
+    ('Reitoria', 'REIT', 'Prédio da Reitoria',                              -3.0896084, -59.9686623, 3),
+    ('Centro de Ciências do Ambiente', 'CCA', 'CCA - UFAM',                 -3.1010, -59.9950, 3),
     ('Faculdade de Medicina', 'FMed', 'Faculdade de Medicina',              -3.0960, -59.9900, 6),
-    ('Ginásio Poliesportivo', 'GIN', 'Ginásio Poliesportivo',               -3.1020, -59.9960, 1),
-    ('Restaurante Universitário', 'RU', 'Restaurante Universitário',        -3.0995, -59.9925, 1),
-    ('Instituto de Ciências Biológicas', 'ICB', 'ICB - UFAM',              -3.0975, -59.9942, 3)
+    ('Quadra Poliesportiva FEFF', 'QFEFF', 'Quadra Poliesportiva FEFF',               -3.0995307, -59.9775777, 1),
+    ('Restaurante Universitário Setor Sul', 'RUS', 'Restaurante Universitário Setor Sul',        -3.1004035, -59.9751888, 1),
+    ('Restaurante Universitário Setor Norte', 'RUN', 'Restaurante Universitário Setor Norte',        -3.0897057, -59.9645193, 2),
+    ('Centro de Convivência', 'CDC', 'Centro de Convivência',              -3.0897057, -59.9645193, 1)
 ON CONFLICT (code) DO NOTHING;
 
 -- ─────────────────────────────────────────────────────────────

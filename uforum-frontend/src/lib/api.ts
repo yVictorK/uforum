@@ -118,6 +118,9 @@ export const marketplaceApi = {
 export const mapApi = {
   listBlocks: (q?: string) =>
     api.get(`/map/blocks${q ? `?q=${encodeURIComponent(q)}` : ''}`),
+  createBlock: (d: unknown) => api.post('/map/blocks', d),
+  updateBlock: (id: string, d: unknown) => api.put(`/map/blocks/${id}`, d),
+  deleteBlock: (id: string) => api.delete(`/map/blocks/${id}`),
 }
 
 export const reportsApi = {

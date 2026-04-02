@@ -7,11 +7,12 @@ interface Props {
   selected: MapBlock | null
   userPos: [number, number] | null
   onSelect: (b: MapBlock) => void
+  onMapClick?: (lat: number, lng: number) => void
 }
 
 const UFAM: [number, number] = [-3.0995, -59.9930]
 
-export default function LeafletMap({ blocks, selected, userPos, onSelect }: Props) {
+export default function LeafletMap({ blocks, selected, userPos, onSelect, onMapClick }: Props) {
   const ref = useRef<HTMLDivElement>(null)
   const mapRef = useRef<ReturnType<typeof import('leaflet')['map']> | null>(null)
 
@@ -34,6 +35,12 @@ export default function LeafletMap({ blocks, selected, userPos, onSelect }: Prop
         attribution: '© OpenStreetMap contributors © CARTO',
         maxZoom: 20,
       }).addTo(map)
+
+      map.on('click', (e: any) => {
+        if (onMapClick) {
+          onMapClick(e.latlng.lat, e.latlng.lng)
+        }
+      })
 
       mapRef.current = map
 
@@ -75,5 +82,5 @@ export default function LeafletMap({ blocks, selected, userPos, onSelect }: Prop
     })
   }, [userPos])
 
-  return <div ref={ref} className="w-full h-full" />
+  return <div ref={ref} className="w-full h-full relative isolate z-0" />
 }

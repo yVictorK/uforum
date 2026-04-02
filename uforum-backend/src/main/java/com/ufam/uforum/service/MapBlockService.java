@@ -46,6 +46,29 @@ public class MapBlockService {
         return toResponse(mapBlockRepository.save(block));
     }
 
+    @Transactional
+    public MapBlockResponse update(UUID id, CreateMapBlockRequest req) {
+        MapBlock block = mapBlockRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Bloco", id));
+        
+        block.setName(req.name());
+        block.setCode(req.code());
+        block.setDescription(req.description());
+        block.setLatitude(req.latitude());
+        block.setLongitude(req.longitude());
+        block.setFloorCount(req.floorCount() != null ? req.floorCount() : 1);
+        
+        return toResponse(mapBlockRepository.save(block));
+    }
+
+    @Transactional
+    public void delete(UUID id) {
+        MapBlock block = mapBlockRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Bloco", id));
+        block.setIsActive(false);
+        mapBlockRepository.save(block);
+    }
+
     private MapBlockResponse toResponse(MapBlock b) {
         return new MapBlockResponse(b.getId(), b.getName(), b.getCode(), b.getDescription(),
             b.getLatitude(), b.getLongitude(), b.getPolygonCoords(), b.getFloorCount());

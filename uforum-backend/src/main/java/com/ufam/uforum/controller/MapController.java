@@ -41,4 +41,19 @@ public class MapController {
     public MapBlockResponse createBlock(@Valid @RequestBody CreateMapBlockRequest req) {
         return mapBlockService.create(req);
     }
+
+    @PutMapping("/blocks/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Atualizar bloco no mapa (ADMIN)")
+    public MapBlockResponse updateBlock(@PathVariable UUID id, @Valid @RequestBody CreateMapBlockRequest req) {
+        return mapBlockService.update(id, req);
+    }
+
+    @DeleteMapping("/blocks/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Remover bloco do mapa (ADMIN)")
+    public void deleteBlock(@PathVariable UUID id) {
+        mapBlockService.delete(id);
+    }
 }
