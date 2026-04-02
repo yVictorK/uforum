@@ -41,7 +41,7 @@ public class PostController {
     public Page<PostResponse> getReplies(@PathVariable UUID id,
         @RequestParam(defaultValue = "0") int page,
         @RequestParam(defaultValue = "20") int size) {
-        return postService.getReplies(id, PageRequest.of(page, size, Sort.by("createdAt").ascending()));
+        return postService.getReplies(id, PageRequest.of(page, size, Sort.by(Sort.Order.desc("upvotesCount"), Sort.Order.desc("createdAt"))));
     }
 
     @GetMapping("/search")

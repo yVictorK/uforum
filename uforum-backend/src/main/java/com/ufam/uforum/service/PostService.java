@@ -122,8 +122,10 @@ public class PostService {
 
         post = postRepository.save(post);
 
-        if (parent != null && !parent.getAuthor().getId().equals(current.getId())) {
-            notificationService.notifyPostReply(parent.getAuthor(), current, post.getId());
+        if (parent != null) {
+            if (!parent.getAuthor().getId().equals(current.getId())) {
+                notificationService.notifyPostReply(parent.getAuthor(), current, post.getId());
+            }
             parent.setRepliesCount(parent.getRepliesCount() + 1);
             postRepository.save(parent);
         }

@@ -18,21 +18,44 @@ interface Props {
   showCommunity?: boolean
 }
 
-export function PostCard({ post: init, onDelete, compact = false, showCommunity = true }: Props) {
+export function PostCard({ post, onDelete, compact = false, showCommunity = true }: Props) {
   const { user, isAuthenticated } = useAuthStore()
   const qc = useQueryClient()
-  const [post, setPost] = useState(init)
-  // Sync with parent when post data updates (e.g. after feed refresh)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => { setPost(init) }, [init.id, init.upvotesCount, init.downvotesCount, init.isSaved])
   const [busy, setBusy] = useState(false)
   const [menu, setMenu] = useState(false)
+
+  const updatePostCache = (updatedPost: Post) => {
+    qc.setQueryData(['post', updatedPost.id], updatedPost)
+
+    const updateList = (prefix: string) => {
+      qc.setQueriesData({ queryKey: [prefix] }, (old: any) => {
+        if (!old || !old.pages) return old
+        return {
+          ...old,
+          pages: old.pages.map((p: any) => ({
+            ...p,
+            content: p.content.map((item: Post) => item.id === updatedPost.id ? updatedPost : item)
+          }))
+        }
+      })
+    }
+
+    updateList('feed')
+    updateList('replies')
+    updateList('reply-replies')
+    updateList('u-posts')
+    updateList('c-posts')
+    updateList('saved-posts')
+  }
 
   const vote = async (type: 'UPVOTE' | 'DOWNVOTE') => {
     if (!isAuthenticated) { toast.error('Faça login para votar'); return }
     if (busy) return
     setBusy(true)
-    try { const { data } = await postsApi.vote(post.id, type); setPost(data); qc.setQueryData(['post', post.id], data) }
+    try { 
+      const { data } = await postsApi.vote(post.id, type)
+      updatePostCache(data)
+    }
     catch { toast.error('Erro ao votar') }
     finally { setBusy(false) }
   }
@@ -41,9 +64,14 @@ export function PostCard({ post: init, onDelete, compact = false, showCommunity 
     if (!isAuthenticated) { toast.error('Faça login para salvar'); return }
     try {
       const { data } = await postsApi.save(post.id)
-      setPost(data)
+      updatePostCache(data)
       toast.success(data.isSaved ? 'Post salvo!' : 'Removido dos salvos')
-    } catch { toast.error('Erro') }
+      
+      // If we are unsaving and on the saved page, we want it to vanish, so we tell React Query to fetch fresh data for saved-posts
+      if (!data.isSaved && window.location.pathname === '/saved') {
+        qc.invalidateQueries({ queryKey: ['saved-posts'] })
+      }
+    } catch { toast.error('Erro ao salvar') }
   }
 
   const del = async () => {
