@@ -1,1 +1,27 @@
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
+
+# Frontend
 node_modules/
+.next/
+out/
+build/
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+npm-debug.log*
+
+# Backend
+target/
+*.jar
+*.war
+*.class
+*.log
+
+# Application Data
+uploads/
+uforum-backend/uploads/
