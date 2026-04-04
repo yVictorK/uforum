@@ -1,19 +1,25 @@
 'use client'
 import { use, useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, CalendarDays, MapPin, Users, CheckCircle2 } from 'lucide-react'
+import { ArrowLeft, CalendarDays, MapPin, Users, CheckCircle2, MoreVertical, Edit3, Trash2 } from 'lucide-react'
 import { eventsApi } from '@/lib/api'
 import { useAuthStore } from '@/store/auth'
 import { fmtDate, fmtNum } from '@/lib/utils'
 import { Avatar } from '@/components/ui/Avatar'
 import { Sk } from '@/components/ui/index'
 import toast from 'react-hot-toast'
+import { CreateEventModal } from '@/components/event/CreateEventModal'
+import { AnimatePresence, motion } from 'framer-motion'
 
 export default function EventPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
-  const { isAuthenticated } = useAuthStore()
+  const router = useRouter()
+  const { user, isAuthenticated } = useAuthStore()
   const [busy, setBusy] = useState(false)
+  const [showAdminMenu, setShowAdminMenu] = useState(false)
+  const [showEditModal, setShowEditModal] = useState(false)
 
   const { data: event, isLoading, refetch } = useQuery({
     queryKey: ['event', id],
@@ -31,6 +37,21 @@ export default function EventPage({ params }: { params: Promise<{ id: string }> 
     finally { setBusy(false) }
   }
 
+  const qr = useQueryClient()
+
+  const { mutate: deleteEvent } = useMutation({
+    mutationFn: () => eventsApi.delete(id),
+    onSuccess: () => {
+      toast.success('Evento excluído.')
+      qr.invalidateQueries({ queryKey: ['events'] })
+      router.push('/events')
+    },
+    onError: () => toast.error('Erro ao excluir evento.')
+  })
+
+  // Role verification
+  const canEdit = user && (user.role === 'ADMIN' || user.role === 'EVENT_MANAGER' || (event && event.createdBy.id === user.id))
+
   if (isLoading) return (
     <div className="page-wrap py-6 max-w-3xl">
       <Sk className="h-6 w-24 mb-4" /><Sk className="h-64 rounded-2xl mb-6" />
@@ -41,9 +62,35 @@ export default function EventPage({ params }: { params: Promise<{ id: string }> 
 
   return (
     <div className="page-wrap py-6 max-w-3xl">
-      <Link href="/events" className="inline-flex items-center gap-2 text-sm mb-4 group" style={{ color: 'rgba(255,255,255,0.4)' }}>
-        <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />Eventos
-      </Link>
+      <div className="flex items-center justify-between mb-4">
+        <Link href="/events" className="inline-flex items-center gap-2 text-sm group" style={{ color: 'rgba(255,255,255,0.4)' }}>
+          <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />Eventos
+        </Link>
+        
+        {canEdit && (
+          <div className="relative">
+            <button onClick={() => setShowAdminMenu(!showAdminMenu)} className="p-2 rounded-lg hover:bg-zinc-800 text-zinc-400 hover:text-white transition-colors">
+              <MoreVertical className="w-5 h-5" />
+            </button>
+            <AnimatePresence>
+              {showAdminMenu && (
+                <>
+                  <div className="fixed inset-0 z-10" onClick={() => setShowAdminMenu(false)} />
+                  <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
+                    className="absolute right-0 top-full mt-2 w-48 bg-zinc-900 border border-zinc-700 shadow-2xl rounded-xl z-20 overflow-hidden py-1">
+                    <button onClick={() => { setShowAdminMenu(false); setShowEditModal(true) }} className="w-full text-left flex items-center gap-2 px-4 py-2 hover:bg-zinc-800 text-sm text-zinc-300">
+                      <Edit3 className="w-4 h-4" /> Editar Evento
+                    </button>
+                    <button onClick={() => { if(window.confirm('Tem certeza?')) deleteEvent() }} className="w-full text-left flex items-center gap-2 px-4 py-2 hover:bg-rose-500/10 text-rose-400 text-sm">
+                      <Trash2 className="w-4 h-4" /> Excluir Evento
+                    </button>
+                  </motion.div>
+                </>
+              )}
+            </AnimatePresence>
+          </div>
+        )}
+      </div>
 
       {event.imageUrl ? (
         // eslint-disable-next-line @next/next/no-img-element
@@ -99,6 +146,15 @@ export default function EventPage({ params }: { params: Promise<{ id: string }> 
           </div>
         </div>
       </div>
+
+      {canEdit && showEditModal && (
+        <CreateEventModal 
+          open={showEditModal} 
+          onClose={() => setShowEditModal(false)}
+          onSuccess={() => refetch()}
+          initialData={event}
+        />
+      )}
     </div>
   )
 }

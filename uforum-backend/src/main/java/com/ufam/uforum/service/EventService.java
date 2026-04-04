@@ -84,6 +84,41 @@ public class EventService {
     }
 
     @Transactional
+    public EventResponse update(UUID eventId, CreateEventRequest req) {
+        User current = userService.getCurrentUser();
+        Event event = findOrThrow(eventId);
+
+        boolean isCreator = event.getCreatedBy().getId().equals(current.getId());
+        boolean hasPrivileges = current.getRole().name().equals("ADMIN") || current.getRole().name().equals("EVENT_MANAGER");
+
+        if (!isCreator && !hasPrivileges) {
+            throw new UnauthorizedException("Sem permissão para editar este evento. Você não é o autor original.");
+        }
+
+        if (req.endDate() != null && req.endDate().isBefore(req.startDate()))
+            throw new BusinessException("Data de término deve ser após a data de início");
+
+        event.setTitle(req.title());
+        event.setDescription(req.description());
+        event.setImageUrl(req.imageUrl());
+        event.setLocation(req.location());
+        event.setMapBlockId(req.mapBlockId());
+        event.setStartDate(req.startDate());
+        event.setEndDate(req.endDate());
+
+        if (req.communityId() != null) {
+            event.setCommunity(
+                communityRepository.findById(req.communityId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Comunidade", req.communityId()))
+            );
+        } else {
+            event.setCommunity(null);
+        }
+
+        return toResponse(eventRepository.save(event), current);
+    }
+
+    @Transactional
     public EventResponse toggleAttendance(UUID eventId) {
         User current = userService.getCurrentUser();
         Event event = findOrThrow(eventId);
@@ -106,10 +141,10 @@ public class EventService {
         Event event = findOrThrow(eventId);
 
         boolean isCreator = event.getCreatedBy().getId().equals(current.getId());
-        boolean isAdmin = current.getRole().name().equals("ADMIN");
+        boolean hasPrivileges = current.getRole().name().equals("ADMIN") || current.getRole().name().equals("EVENT_MANAGER");
 
-        if (!isCreator && !isAdmin)
-            throw new UnauthorizedException("Sem permissão para excluir este evento");
+        if (!isCreator && !hasPrivileges)
+            throw new UnauthorizedException("Sem permissão para excluir este evento. Você não é o autor original.");
 
         event.setIsActive(false);
         eventRepository.save(event);

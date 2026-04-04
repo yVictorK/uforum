@@ -28,4 +28,6 @@ public interface UserRepository extends JpaRepository<User, UUID> {
 
     @Query("SELECT COUNT(u) FROM User u JOIN u.followers f WHERE u.id = :userId")
     long countFollowers(UUID userId);
+
+    long countByIsActiveTrue();
 }

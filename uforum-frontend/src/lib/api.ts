@@ -97,6 +97,8 @@ export const eventsApi = {
   list: (p = 0) => api.get(`/events?page=${p}&size=20`),
   get: (id: string) => api.get(`/events/${id}`),
   create: (d: unknown) => api.post('/events', d),
+  update: (id: string, d: unknown) => api.put(`/events/${id}`, d),
+  delete: (id: string) => api.delete(`/events/${id}`),
   attend: (id: string) => api.post(`/events/${id}/attend`),
 }
 
@@ -125,4 +127,11 @@ export const mapApi = {
 
 export const reportsApi = {
   create: (d: unknown) => api.post('/reports', d),
+}
+
+export const adminApi = {
+  getUsers: (p = 0) => api.get(`/admin/users?page=${p}&size=20`),
+  getMetrics: () => api.get('/admin/metrics'),
+  updateRole: (id: string, role: string) => api.patch(`/admin/users/${id}/role?role=${role}`),
+  toggleStatus: (id: string) => api.patch(`/admin/users/${id}/status`),
 }

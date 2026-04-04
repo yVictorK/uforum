@@ -1,9 +1,12 @@
 'use client'
+import { useState } from 'react'
 import { useInfiniteQuery } from '@tanstack/react-query'
-import { CalendarDays } from 'lucide-react'
+import { CalendarDays, Plus } from 'lucide-react'
 import { EventCard } from '@/components/event/EventCard'
+import { CreateEventModal } from '@/components/event/CreateEventModal'
 import { Empty, Sk } from '@/components/ui/index'
 import { eventsApi } from '@/lib/api'
+import { useAuthStore } from '@/store/auth'
 import type { Event, Page } from '@/types'
 
 export default function EventsPage() {
@@ -14,12 +17,22 @@ export default function EventsPage() {
     getNextPageParam: (last: Page<Event>) => last.last ? undefined : last.number + 1,
   })
   const events = data?.pages.flatMap((p) => p.content) ?? []
+  const { user } = useAuthStore()
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const canCreate = user?.role === 'ADMIN' || user?.role === 'EVENT_MANAGER'
 
   return (
     <div className="page-wrap py-6">
-      <div className="mb-6">
-        <h1 className="text-2xl font-black">Eventos</h1>
-        <p className="text-sm mt-0.5" style={{ color: 'rgba(255,255,255,0.35)' }}>Próximos eventos do campus</p>
+      <div className="mb-6 flex items-start justify-between">
+        <div>
+          <h1 className="text-2xl font-black">Eventos</h1>
+          <p className="text-sm mt-0.5" style={{ color: 'rgba(255,255,255,0.35)' }}>Próximos eventos do campus</p>
+        </div>
+        {canCreate && (
+          <button onClick={() => setIsModalOpen(true)} className="btn-green flex items-center gap-2 py-2 px-4 text-sm font-medium">
+            <Plus className="w-4 h-4" /> Cadastrar Evento
+          </button>
+        )}
       </div>
 
       {isLoading ? (
@@ -44,6 +57,8 @@ export default function EventsPage() {
           )}
         </>
       )}
+
+      <CreateEventModal open={isModalOpen} onClose={() => setIsModalOpen(false)} />
     </div>
   )
 }

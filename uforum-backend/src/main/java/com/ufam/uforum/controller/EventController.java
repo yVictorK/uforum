@@ -44,6 +44,13 @@ public class EventController {
         return eventService.create(req);
     }
 
+    @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('EVENT_MANAGER','ADMIN')")
+    @Operation(summary = "Atualizar informações de um evento (requer permissão EVENT_MANAGER ou ADMIN)")
+    public EventResponse update(@PathVariable UUID id, @Valid @RequestBody CreateEventRequest req) {
+        return eventService.update(id, req);
+    }
+
     @PostMapping("/{id}/attend")
     @Operation(summary = "Confirmar / cancelar presença em um evento")
     public EventResponse toggleAttendance(@PathVariable UUID id) {

@@ -26,4 +26,6 @@ public interface EventRepository extends JpaRepository<Event, UUID> {
     @Query(value = "SELECT e FROM Event e JOIN FETCH e.createdBy JOIN e.attendees a WHERE a.id = :userId",
            countQuery = "SELECT COUNT(e) FROM Event e JOIN e.attendees a WHERE a.id = :userId")
     Page<Event> findByAttendeeId(UUID userId, Pageable pageable);
+
+    long countByIsActiveTrue();
 }

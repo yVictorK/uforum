@@ -48,4 +48,6 @@ public interface PostRepository extends JpaRepository<Post, UUID> {
     @Query(value = "SELECT p FROM Post p JOIN FETCH p.author LEFT JOIN FETCH p.community JOIN p.savedBy u WHERE u.id = :userId AND p.isDeleted = false",
            countQuery = "SELECT COUNT(p) FROM Post p JOIN p.savedBy u WHERE u.id = :userId AND p.isDeleted = false")
     Page<Post> findSavedByUserId(UUID userId, Pageable pageable);
+
+    long countByIsDeletedFalse();
 }

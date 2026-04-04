@@ -64,7 +64,7 @@ public class SecurityConfig {
                 .requestMatchers(PUBLIC_STATIC).permitAll()
 
                 // ── Admin ──
-                .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
+                .requestMatchers("/api/v1/admin/**").hasAnyRole("ADMIN", "MODERATOR")
 
                 // ── Users: GET perfil público é permitido, escrita requer auth ──
                 .requestMatchers(HttpMethod.GET, "/api/v1/users/{username}").permitAll()

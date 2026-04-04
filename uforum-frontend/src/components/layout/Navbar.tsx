@@ -2,7 +2,7 @@
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
-import { Bell, Search, LogOut, User, Menu, X, ShoppingBag, Map, CalendarDays, Users, Home, BookmarkIcon, Plus, Hash } from 'lucide-react'
+import { Bell, Search, LogOut, User, Menu, X, ShoppingBag, Map, CalendarDays, Users, Home, BookmarkIcon, Plus, Hash, Shield } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Avatar } from '@/components/ui/Avatar'
 import { Logo } from '@/components/ui/Logo'
@@ -136,6 +136,15 @@ export function Navbar() {
                               style={{ color: 'var(--text-secondary)' }}>
                               <User className="w-4 h-4" />Meu Perfil
                             </Link>
+
+                            {(user?.role === 'ADMIN' || user?.role === 'MODERATOR') && (
+                              <Link href="/admin/users" onClick={() => setUserMenu(false)}
+                                className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors hover:bg-[rgba(0,196,79,0.1)]"
+                                style={{ color: '#00c44f' }}>
+                                <Shield className="w-4 h-4" />Acessar Painel
+                              </Link>
+                            )}
+
                             <button onClick={handleLogout}
                               className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors hover:bg-[rgba(255,69,69,0.1)]"
                               style={{ color: '#ff6b6b' }}>
