@@ -36,4 +36,18 @@ public class AuthController {
     public AuthResponse refresh(@Valid @RequestBody RefreshTokenRequest req) {
         return authService.refreshToken(req);
     }
+
+    @PostMapping("/forgot-password")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @Operation(summary = "Solicitar link de recuperação de senha por e-mail")
+    public void forgotPassword(@Valid @RequestBody ForgotPasswordRequest req) {
+        authService.initiatePasswordReset(req);
+    }
+
+    @PostMapping("/reset-password")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @Operation(summary = "Redefinir senha usando o token recebido no e-mail")
+    public void resetPassword(@Valid @RequestBody ResetPasswordRequest req) {
+        authService.resetPassword(req);
+    }
 }

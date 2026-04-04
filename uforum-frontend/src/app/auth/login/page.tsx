@@ -1,11 +1,12 @@
 'use client'
+import { useState } from 'react'
 import { Logo } from '@/components/ui/Logo'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Mail, Lock, ArrowRight } from 'lucide-react'
+import { Mail, Lock, ArrowRight, Eye, EyeOff } from 'lucide-react'
 import { authApi } from '@/lib/api'
 import { useAuthStore } from '@/store/auth'
 import toast from 'react-hot-toast'
@@ -17,6 +18,7 @@ type F = z.infer<typeof schema>
 export default function LoginPage() {
   const router = useRouter()
   const { login } = useAuthStore()
+  const [showPassword, setShowPassword] = useState(false)
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<F>({ resolver: zodResolver(schema) })
 
   const onSubmit = async (d: F) => {
@@ -74,10 +76,22 @@ export default function LoginPage() {
             </div>
 
             <div>
-              <label className="label">Senha</label>
+              <div className="flex items-center justify-between">
+                <label className="label">Senha</label>
+                <Link href="/auth/forgot-password" className="text-xs font-medium hover:underline text-emerald-500 mb-1.5 inline-block">
+                  Esqueci minha senha
+                </Link>
+              </div>
               <div className="relative">
                 <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'rgba(255,255,255,0.25)' }} />
-                <input {...register('password')} type="password" placeholder="••••••••" className="input pl-10" />
+                <input {...register('password')} type={showPassword ? 'text' : 'password'} placeholder="••••••••" className="input px-10" />
+                <button 
+                  type="button" 
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-zinc-500 hover:text-white transition-colors"
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
               </div>
               {errors.password && <p className="text-xs mt-1" style={{ color: '#ff6b6b' }}>{errors.password.message}</p>}
             </div>

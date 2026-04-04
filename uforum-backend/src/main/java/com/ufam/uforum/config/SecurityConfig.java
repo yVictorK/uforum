@@ -51,6 +51,8 @@ public class SecurityConfig {
         "/api-docs/**",
         "/actuator/**",
         "/api/v1/auth/**",
+        "/api/v1/auth/forgot-password",
+        "/api/v1/auth/reset-password"
     };
 
     @Bean

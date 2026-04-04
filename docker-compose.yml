@@ -49,17 +49,37 @@ services:
       JWT_REFRESH_EXP: 604800000
       SERVER_PORT: 8080
       FRONTEND_URL: http://localhost:3000
+      SPRING_MAIL_HOST: mailhog
+      SPRING_MAIL_PORT: 1025
+      SPRING_MAIL_USERNAME: noreply@uforum.com
+      SPRING_MAIL_PASSWORD: ""
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH: "false"
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE: "false"
+      # Config para Gmail REAL (Descomente se quiser usar e-mails reais):
+      # SPRING_MAIL_HOST: smtp.gmail.com
+      # SPRING_MAIL_PORT: 587
+      # SPRING_MAIL_USERNAME: seu-email@ufam.edu.br
+      # SPRING_MAIL_PASSWORD: sua-senha-de-app-google
     volumes:
       - uploads_data:/app/uploads
     networks:
       - uforum-net
     healthcheck:
-      # Verifica se a porta 8080 está aberta — não precisa de Actuator nem curl
       test: ["CMD-SHELL", "nc -z localhost 8080 || exit 1"]
       interval: 15s
       timeout: 5s
       retries: 10
       start_period: 60s
+
+  mailhog:
+    image: mailhog/mailhog
+    container_name: uforum-mailhog
+    restart: unless-stopped
+    ports:
+      - "1025:1025" # Porta SMTP
+      - "8025:8025" # Interface Web (Visualizar e-mails)
+    networks:
+      - uforum-net
 
   frontend:
     build:

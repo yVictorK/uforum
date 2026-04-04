@@ -48,6 +48,8 @@ export const authApi = {
   register: (d: unknown) => api.post('/auth/register', d),
   login: (d: unknown) => api.post('/auth/login', d),
   refresh: (refreshToken: string) => api.post('/auth/refresh', { refreshToken }),
+  forgotPassword: (email: string) => api.post('/auth/forgot-password', { email }),
+  resetPassword: (d: unknown) => api.post('/auth/reset-password', d),
 }
 
 export const usersApi = {

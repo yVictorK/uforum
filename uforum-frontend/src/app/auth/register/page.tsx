@@ -5,11 +5,12 @@ import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Mail, Lock, User, Hash, ArrowRight } from 'lucide-react'
+import { Mail, Lock, User, Hash, ArrowRight, Eye, EyeOff } from 'lucide-react'
 import { authApi } from '@/lib/api'
 import { useAuthStore } from '@/store/auth'
 import toast from 'react-hot-toast'
 import { motion } from 'framer-motion'
+import { useState } from 'react'
 
 const COURSES = [
   'Ciência da Computação', 'Engenharia de Software', 'Sistemas de Informação',
@@ -20,9 +21,9 @@ const COURSES = [
 const schema = z.object({
   fullName:        z.string().min(3, 'Mínimo 3 caracteres').max(100),
   username:        z.string().min(3).max(50).regex(/^[a-zA-Z0-9_]+$/, 'Apenas letras, números e _'),
-  email:           z.string().email('Email inválido').regex(/.*@(ufam\.edu\.br|alumni\.ufam\.edu\.br)$/, 'Somente @ufam.edu.br'),
+  email:           z.string().email('Email inválido').regex(/.*@([a-z0-9]+\.)*ufam\.edu\.br$/, 'Somente e-mails da UFAM'),
   studentId:       z.string().min(6, 'Mínimo 6 caracteres').max(20),
-  password:        z.string().min(8, 'Mínimo 8 caracteres'),
+  password:        z.string().min(8, 'Mínimo 8 caracteres').regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%*])[a-zA-Z0-9!@#$%*]{8,}$/, 'Senha deve conter: 1 maiúscula, 1 minúscula, 1 número e 1 especial (!@#$%*)'),
   confirmPassword: z.string(),
   course:          z.string().optional(),
   semester:        z.string().optional(),
@@ -36,6 +37,7 @@ type F = z.infer<typeof schema>
 export default function RegisterPage() {
   const router = useRouter()
   const { login } = useAuthStore()
+  const [showPassword, setShowPassword] = useState(false)
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<F>({
     resolver: zodResolver(schema),
   })
@@ -138,7 +140,14 @@ export default function RegisterPage() {
                 <label className="label">Senha</label>
                 <div className="relative">
                   <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'rgba(255,255,255,0.25)' }} />
-                  <input {...register('password')} type="password" placeholder="Mín. 8 caracteres" className="input pl-10" />
+                  <input {...register('password')} type={showPassword ? 'text' : 'password'} placeholder="Mín. 8 caracteres" className="input px-10" />
+                  <button 
+                    type="button" 
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-zinc-500 hover:text-white transition-colors"
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
                 </div>
                 <ErrMsg msg={errors.password?.message} />
               </div>
@@ -147,7 +156,7 @@ export default function RegisterPage() {
                 <label className="label">Confirmar senha</label>
                 <div className="relative">
                   <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'rgba(255,255,255,0.25)' }} />
-                  <input {...register('confirmPassword')} type="password" placeholder="Repita a senha" className="input pl-10" />
+                  <input {...register('confirmPassword')} type={showPassword ? 'text' : 'password'} placeholder="Repita a senha" className="input px-10" />
                 </div>
                 <ErrMsg msg={errors.confirmPassword?.message} />
               </div>
