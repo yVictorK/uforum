@@ -76,7 +76,18 @@ export function PostCard({ post, onDelete, compact = false, showCommunity = true
 
   const del = async () => {
     if (!confirm('Deletar este post?')) return
-    try { await postsApi.delete(post.id); toast.success('Post deletado'); onDelete?.() }
+    try {
+      await postsApi.delete(post.id)
+      toast.success('Post deletado')
+
+      // Se for uma resposta, invalida o cache do post pai para atualizar o contador
+      if (post.parentId) {
+        qc.invalidateQueries({ queryKey: ['post', post.parentId] })
+        qc.invalidateQueries({ queryKey: ['replies', post.parentId] })
+      }
+
+      onDelete?.()
+    }
     catch { toast.error('Erro ao deletar') }
   }
 

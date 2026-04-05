@@ -1,0 +1,30 @@
+# ============================================================
+#  UForum — Docker Compose (MODO DESENVOLVIMENTO)
+#  Uso: docker compose -f docker-compose.yml -f docker-compose.dev.yml up
+# ============================================================
+
+services:
+
+  backend:
+    build:
+      context: ./uforum-backend
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ./uforum-backend:/app
+      - ~/.m2:/root/.m2
+    # Recarrega a aplicação quando arquivos .java são salvos (via DevTools)
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+      - SPRING_DEVTOOLS_RESTART_ENABLED=true
+
+  frontend:
+    build:
+      context: ./uforum-frontend
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ./uforum-frontend:/app
+      - /app/node_modules
+      - /app/.next
+    environment:
+      - WATCHPACK_POLLING=true
+    command: npm run dev

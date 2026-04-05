@@ -19,6 +19,16 @@ public interface EventRepository extends JpaRepository<Event, UUID> {
     Page<Event> findByIsActiveTrueAndStartDateAfterOrderByStartDateAsc(LocalDateTime now, Pageable pageable);
 
     @Query(value = "SELECT e FROM Event e JOIN FETCH e.createdBy " +
+           "WHERE e.isActive = true AND e.startDate > :now " +
+           "AND (LOWER(e.title) LIKE LOWER(CONCAT('%', :q, '%')) " +
+           "OR LOWER(e.description) LIKE LOWER(CONCAT('%', :q, '%'))) " +
+           "ORDER BY e.startDate ASC",
+           countQuery = "SELECT COUNT(e) FROM Event e WHERE e.isActive = true AND e.startDate > :now " +
+           "AND (LOWER(e.title) LIKE LOWER(CONCAT('%', :q, '%')) " +
+           "OR LOWER(e.description) LIKE LOWER(CONCAT('%', :q, '%')))")
+    Page<Event> searchUpcoming(LocalDateTime now, String q, Pageable pageable);
+
+    @Query(value = "SELECT e FROM Event e JOIN FETCH e.createdBy " +
            "WHERE e.community.id = :communityId AND e.isActive = true",
            countQuery = "SELECT COUNT(e) FROM Event e WHERE e.community.id = :communityId AND e.isActive = true")
     Page<Event> findByCommunityIdAndIsActiveTrue(UUID communityId, Pageable pageable);

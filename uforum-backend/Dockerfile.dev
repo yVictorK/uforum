@@ -1,0 +1,18 @@
+# Dockerfile de Desenvolvimento para o Backend (UForum)
+FROM maven:3.9.6-eclipse-temurin-21
+
+WORKDIR /app
+
+# Copia apenas o pom.xml primeiro para aproveitar o cache do Docker nas dependências
+COPY pom.xml .
+RUN mvn dependency:go-offline -B
+
+# O código fonte será montado via volume, mas copiamos aqui para garantir que o build inicial funcione
+COPY src ./src
+
+# Expõe a porta padrão do Spring Boot
+EXPOSE 8080
+
+# Comando para rodar a aplicação em modo de desenvolvimento com Hot Reload
+# O Spring Boot DevTools gerencia o restart ao detectar mudanças no classpath
+ENTRYPOINT ["mvn", "spring-boot:run"]

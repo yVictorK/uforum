@@ -96,7 +96,7 @@ export const postsApi = {
 }
 
 export const eventsApi = {
-  list: (p = 0) => api.get(`/events?page=${p}&size=20`),
+  list: (p = 0, q?: string) => api.get(`/events?page=${p}&size=20${q ? `&q=${encodeURIComponent(q)}` : ''}`),
   get: (id: string) => api.get(`/events/${id}`),
   create: (d: unknown) => api.post('/events', d),
   update: (id: string, d: unknown) => api.put(`/events/${id}`, d),

@@ -25,9 +25,10 @@ public class EventController {
     @GetMapping
     @Operation(summary = "Listar próximos eventos")
     public Page<EventResponse> list(
+        @RequestParam(required = false) String q,
         @RequestParam(defaultValue = "0") int page,
         @RequestParam(defaultValue = "20") int size) {
-        return eventService.listUpcoming(PageRequest.of(page, size));
+        return eventService.listUpcoming(q, PageRequest.of(page, size));
     }
 
     @GetMapping("/{id}")

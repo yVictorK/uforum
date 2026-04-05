@@ -30,10 +30,18 @@ public class EventService {
     private final CommunityRepository communityRepository;
     private final UserService userService;
 
-    public Page<EventResponse> listUpcoming(Pageable pageable) {
+    public Page<EventResponse> listUpcoming(String q, Pageable pageable) {
         User current = safeGetCurrentUser();
-        return eventRepository.findByIsActiveTrueAndStartDateAfterOrderByStartDateAsc(
-            LocalDateTime.now(), pageable).map(e -> toResponse(e, current));
+        LocalDateTime now = LocalDateTime.now();
+        Page<Event> events;
+
+        if (q != null && !q.isBlank()) {
+            events = eventRepository.searchUpcoming(now, q, pageable);
+        } else {
+            events = eventRepository.findByIsActiveTrueAndStartDateAfterOrderByStartDateAsc(now, pageable);
+        }
+
+        return events.map(e -> toResponse(e, current));
     }
 
     public EventResponse getById(UUID id) {

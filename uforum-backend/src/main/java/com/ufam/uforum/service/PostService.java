@@ -40,22 +40,21 @@ public class PostService {
     public Page<PostResponse> getPostsByCommunity(UUID communityId, Pageable pageable) {
         User current = safeGetCurrentUser();
         return postRepository.findByCommunityIdAndParentIsNullAndIsDeletedFalse(communityId, pageable)
-            .map(p -> toResponse(p, current));
+                .map(p -> toResponse(p, current));
     }
 
-    // FIX: was doing postRepository.findAll().stream() to get user — now uses userRepository directly
     public Page<PostResponse> getPostsByUser(String username, Pageable pageable) {
         User target = userRepository.findByUsername(username)
-            .orElseThrow(() -> new ResourceNotFoundException("Usuário", username));
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário", username));
         User current = safeGetCurrentUser();
         return postRepository.findByAuthorIdAndParentIsNullAndIsDeletedFalse(target.getId(), pageable)
-            .map(p -> toResponse(p, current));
+                .map(p -> toResponse(p, current));
     }
 
     public Page<PostResponse> getReplies(UUID postId, Pageable pageable) {
         User current = safeGetCurrentUser();
         return postRepository.findByParentIdAndIsDeletedFalse(postId, pageable)
-            .map(p -> toResponse(p, current));
+                .map(p -> toResponse(p, current));
     }
 
     public PostResponse getById(UUID id) {
@@ -69,18 +68,16 @@ public class PostService {
         return postRepository.search(q, pageable).map(p -> toResponse(p, current));
     }
 
-    // NEW: endpoint for saved posts
     public Page<PostResponse> getSaved(Pageable pageable) {
         User current = userService.getCurrentUser();
         return postRepository.findSavedByUserId(current.getId(), pageable)
-            .map(p -> toResponse(p, current));
+                .map(p -> toResponse(p, current));
     }
-
 
     public Page<PostResponse> getFollowingFeed(Pageable pageable) {
         User current = userService.getCurrentUser();
         return postRepository.findByFollowing(current.getId(), pageable)
-            .map(p -> toResponse(p, current));
+                .map(p -> toResponse(p, current));
     }
 
     @Transactional
@@ -102,23 +99,23 @@ public class PostService {
 
         if (req.communityId() != null) {
             community = communityRepository.findById(req.communityId())
-                .orElseThrow(() -> new ResourceNotFoundException("Comunidade", req.communityId()));
+                    .orElseThrow(() -> new ResourceNotFoundException("Comunidade", req.communityId()));
             // Validate the user is a member of the community
             boolean isMember = community.getMembers().stream()
-                .anyMatch(m -> m.getId().equals(current.getId()));
+                    .anyMatch(m -> m.getId().equals(current.getId()));
             if (!isMember)
                 throw new BusinessException("Você precisa ser membro desta comunidade para publicar");
         }
 
         Post post = Post.builder()
-            .title(req.title())
-            .content(req.content())
-            .imageUrl(req.imageUrl())
-            .author(current)
-            .community(community)
-            .parent(parent)
-            .depth(parent != null ? parent.getDepth() + 1 : 0)
-            .build();
+                .title(req.title())
+                .content(req.content())
+                .imageUrl(req.imageUrl())
+                .author(current)
+                .community(community)
+                .parent(parent)
+                .depth(parent != null ? parent.getDepth() + 1 : 0)
+                .build();
 
         post = postRepository.save(post);
 
@@ -154,7 +151,7 @@ public class PostService {
             }
         } else {
             PostVote newVote = PostVote.builder()
-                .post(post).user(current).voteType(voteType).build();
+                    .post(post).user(current).voteType(voteType).build();
             postVoteRepository.save(newVote);
             adjustVoteCount(post, voteType, 1);
 
@@ -183,11 +180,14 @@ public class PostService {
         User current = userService.getCurrentUser();
         Post post = findOrThrow(postId);
 
+        if (post.getIsDeleted())
+            return;
+
         boolean isAuthor = post.getAuthor().getId().equals(current.getId());
         boolean isAdmin = current.getRole().name().equals("ADMIN");
         boolean isMod = post.getCommunity() != null &&
-            post.getCommunity().getModerators().stream()
-                .anyMatch(m -> m.getId().equals(current.getId()));
+                post.getCommunity().getModerators().stream()
+                        .anyMatch(m -> m.getId().equals(current.getId()));
 
         if (!isAuthor && !isAdmin && !isMod)
             throw new UnauthorizedException("Sem permissão para deletar este post");
@@ -195,21 +195,34 @@ public class PostService {
         post.setIsDeleted(true);
         post.setContent("[post removido]");
         postRepository.save(post);
+
+        if (post.getParent() != null) {
+            Post parent = post.getParent();
+            if (parent.getRepliesCount() > 0) {
+                parent.setRepliesCount(parent.getRepliesCount() - 1);
+                postRepository.save(parent);
+            }
+        }
     }
 
     private void adjustVoteCount(Post post, PostVoteType type, int delta) {
-        if (type == PostVoteType.UPVOTE) post.setUpvotesCount(post.getUpvotesCount() + delta);
-        else post.setDownvotesCount(post.getDownvotesCount() + delta);
+        if (type == PostVoteType.UPVOTE)
+            post.setUpvotesCount(post.getUpvotesCount() + delta);
+        else
+            post.setDownvotesCount(post.getDownvotesCount() + delta);
     }
 
     private Post findOrThrow(UUID id) {
         return postRepository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Post", id));
+                .orElseThrow(() -> new ResourceNotFoundException("Post", id));
     }
 
     private User safeGetCurrentUser() {
-        try { return userService.getCurrentUser(); }
-        catch (ResourceNotFoundException | org.springframework.security.core.AuthenticationException e) { return null; }
+        try {
+            return userService.getCurrentUser();
+        } catch (ResourceNotFoundException | org.springframework.security.core.AuthenticationException e) {
+            return null;
+        }
     }
 
     public PostResponse toResponse(Post p, User currentUser) {
@@ -223,15 +236,14 @@ public class PostService {
         }
 
         return new PostResponse(
-            p.getId(), p.getTitle(), p.getContent(), p.getImageUrl(),
-            userService.toSummary(p.getAuthor()),
-            p.getCommunity() != null ? p.getCommunity().getId() : null,
-            p.getCommunity() != null ? p.getCommunity().getName() : null,
-            p.getCommunity() != null ? p.getCommunity().getSlug() : null,
-            p.getParent() != null ? p.getParent().getId() : null,
-            p.getDepth(), p.getUpvotesCount(), p.getDownvotesCount(),
-            p.getScore(), p.getRepliesCount(), p.getIsDeleted(), p.getIsPinned(),
-            currentUserVote, isSaved, p.getCreatedAt(), p.getUpdatedAt()
-        );
+                p.getId(), p.getTitle(), p.getContent(), p.getImageUrl(),
+                userService.toSummary(p.getAuthor()),
+                p.getCommunity() != null ? p.getCommunity().getId() : null,
+                p.getCommunity() != null ? p.getCommunity().getName() : null,
+                p.getCommunity() != null ? p.getCommunity().getSlug() : null,
+                p.getParent() != null ? p.getParent().getId() : null,
+                p.getDepth(), p.getUpvotesCount(), p.getDownvotesCount(),
+                p.getScore(), p.getRepliesCount(), p.getIsDeleted(), p.getIsPinned(),
+                currentUserVote, isSaved, p.getCreatedAt(), p.getUpdatedAt());
     }
 }
