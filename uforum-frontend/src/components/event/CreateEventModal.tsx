@@ -48,12 +48,11 @@ export function CreateEventModal({ open, onClose, onSuccess, initialData }: Prop
   const onSubmit = async (data: FormData) => {
     try {
       // Ajusta o formato da data para o LocalDateTime do Spring Boot (yyyy-MM-dd'T'HH:mm)
-      // O input datetime-local já vem no formato 'YYYY-MM-DDTHH:mm'
       const payload = {
         title: data.title,
         description: data.description,
         location: data.location,
-        startDate: data.startDate, // 'YYYY-MM-DDTHH:mm'
+        startDate: data.startDate,
         endDate: data.endDate || undefined,
         imageUrl: data.imageUrl || undefined,
       }
@@ -81,26 +80,26 @@ export function CreateEventModal({ open, onClose, onSuccess, initialData }: Prop
         <div>
           <label className="label">Título do Evento</label>
           <input {...register('title')} placeholder="Ex: Simpósio de Tecnologia" className="input" />
-          {errors.title && <p className="text-xs mt-1 text-red-500">{errors.title.message}</p>}
+          {errors.title && <p className="text-xs mt-1 text-[#ef4444] font-medium">{errors.title.message}</p>}
         </div>
 
         <div>
           <label className="label">Descrição</label>
           <textarea {...register('description')} rows={4} placeholder="Sobre o que é o evento..." className="input resize-none" />
-          {errors.description && <p className="text-xs mt-1 text-red-500">{errors.description.message}</p>}
+          {errors.description && <p className="text-xs mt-1 text-[#ef4444] font-medium">{errors.description.message}</p>}
         </div>
 
         <div>
           <label className="label flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5" />Localização</label>
           <input {...register('location')} placeholder="Ex: Auditório Samaúma" className="input" />
-          {errors.location && <p className="text-xs mt-1 text-red-500">{errors.location.message}</p>}
+          {errors.location && <p className="text-xs mt-1 text-[#ef4444] font-medium">{errors.location.message}</p>}
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="label flex items-center gap-1.5"><CalendarDays className="w-3.5 h-3.5" />Data e Hora de Início</label>
             <input type="datetime-local" {...register('startDate')} className="input" />
-            {errors.startDate && <p className="text-xs mt-1 text-red-500">{errors.startDate.message}</p>}
+            {errors.startDate && <p className="text-xs mt-1 text-[#ef4444] font-medium">{errors.startDate.message}</p>}
           </div>
           <div>
             <label className="label flex items-center gap-1.5"><CalendarDays className="w-3.5 h-3.5" />Fim (Opcional)</label>
@@ -111,7 +110,7 @@ export function CreateEventModal({ open, onClose, onSuccess, initialData }: Prop
         <div>
           <label className="label flex items-center gap-1.5"><Link2 className="w-3.5 h-3.5" />URL do Banner/Imagem (Opcional)</label>
           <input {...register('imageUrl')} placeholder="https://..." className="input" />
-          {errors.imageUrl && <p className="text-xs mt-1 text-red-500">{errors.imageUrl.message}</p>}
+          {errors.imageUrl && <p className="text-xs mt-1 text-[#ef4444] font-medium">{errors.imageUrl.message}</p>}
         </div>
 
         <div className="flex justify-end gap-3 pt-4">

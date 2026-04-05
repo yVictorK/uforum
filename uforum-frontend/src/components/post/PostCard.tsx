@@ -52,7 +52,7 @@ export function PostCard({ post, onDelete, compact = false, showCommunity = true
     if (!isAuthenticated) { toast.error('Faça login para votar'); return }
     if (busy) return
     setBusy(true)
-    try { 
+    try {
       const { data } = await postsApi.vote(post.id, type)
       updatePostCache(data)
     }
@@ -66,7 +66,7 @@ export function PostCard({ post, onDelete, compact = false, showCommunity = true
       const { data } = await postsApi.save(post.id)
       updatePostCache(data)
       toast.success(data.isSaved ? 'Post salvo!' : 'Removido dos salvos')
-      
+
       // If we are unsaving and on the saved page, we want it to vanish, so we tell React Query to fetch fresh data for saved-posts
       if (!data.isSaved && window.location.pathname === '/saved') {
         qc.invalidateQueries({ queryKey: ['saved-posts'] })
@@ -91,8 +91,8 @@ export function PostCard({ post, onDelete, compact = false, showCommunity = true
 
   return (
     <motion.article initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
-      className={cn('card group transition-all duration-200 hover:border-[rgba(255,255,255,0.12)] hover:bg-[#1a1a1a]', compact ? 'p-4' : 'p-5')}>
-      
+      className={cn('card group hover:border-[var(--emerald-500)]/30 hover:bg-[var(--bg-tertiary)]', compact ? 'p-4' : 'p-5')}>
+
       {/* Header */}
       <div className="flex items-center justify-between gap-2 mb-3">
         <div className="flex items-center gap-2.5 min-w-0">
@@ -102,7 +102,8 @@ export function PostCard({ post, onDelete, compact = false, showCommunity = true
           <div className="min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <Link href={`/profile/${post.author.username}`}
-                className="font-semibold text-sm hover:text-[#00c44f] transition-colors truncate">
+                className="font-semibold text-sm hover:text-[var(--emerald-500)] transition-colors truncate"
+                style={{ color: 'var(--text-primary)' }}>
                 {post.author.fullName}
               </Link>
               <span className="text-xs" style={{ color: 'var(--text-muted)' }}>@{post.author.username}</span>
@@ -112,7 +113,7 @@ export function PostCard({ post, onDelete, compact = false, showCommunity = true
               {showCommunity && post.communityName && (
                 <>
                   <span>·</span>
-                  <Link href={`/communities/${post.communitySlug}`} className="text-[#00c44f] hover:underline font-medium">
+                  <Link href={`/communities/${post.communitySlug}`} className="text-[var(--emerald-500)] hover:underline font-semibold">
                     {post.communityName}
                   </Link>
                 </>
@@ -121,26 +122,26 @@ export function PostCard({ post, onDelete, compact = false, showCommunity = true
           </div>
         </div>
 
-        {/* Menu */}
         <div className="relative flex-shrink-0">
           <button onClick={() => setMenu(!menu)}
-            className="opacity-0 group-hover:opacity-100 btn-ghost p-1.5 rounded-lg transition-all">
+            className="btn-ghost p-1.5 rounded-lg transition-all"
+            style={{ color: 'var(--text-muted)' }}>
             <MoreHorizontal className="w-4 h-4" />
           </button>
           {menu && (
             <>
               <div className="fixed inset-0 z-10" onClick={() => setMenu(false)} />
               <div className="absolute right-0 top-full mt-1 w-40 rounded-xl z-20 overflow-hidden py-1"
-                style={{ background: '#1e1e1e', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 16px 40px rgba(0,0,0,0.5)' }}>
+                style={{ background: 'var(--bg-tertiary)', border: '1px solid var(--border-primary)', boxShadow: 'var(--shadow-liquid-hover)' }}>
                 <button onClick={() => { share(); setMenu(false) }}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-[#2a2a2a] transition-colors text-left"
+                  className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-[var(--bg-secondary)] transition-colors text-left"
                   style={{ color: 'var(--text-secondary)' }}>
                   <Share2 className="w-3.5 h-3.5" />Compartilhar
                 </button>
                 {(isOwner || isAdmin) && (
                   <button onClick={() => { del(); setMenu(false) }}
-                    className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-[rgba(255,69,69,0.1)] transition-colors text-left"
-                    style={{ color: '#ff6b6b' }}>
+                    className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-[#ef4444]/10 transition-colors text-left"
+                    style={{ color: '#ef4444' }}>
                     <Trash2 className="w-3.5 h-3.5" />Deletar
                   </button>
                 )}
@@ -154,7 +155,7 @@ export function PostCard({ post, onDelete, compact = false, showCommunity = true
                       .then(() => toast.success('Denúncia enviada!'))
                       .catch(() => toast.error('Erro ao denunciar'))
                   }}
-                    className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-[#2a2a2a] transition-colors text-left"
+                    className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-[var(--bg-secondary)] transition-colors text-left"
                     style={{ color: 'var(--text-secondary)' }}>
                     <Flag className="w-3.5 h-3.5" />Denunciar
                   </button>
@@ -165,10 +166,9 @@ export function PostCard({ post, onDelete, compact = false, showCommunity = true
         </div>
       </div>
 
-      {/* Content */}
       <Link href={`/posts/${post.id}`} className="block">
         {post.title && (
-          <h3 className="font-bold text-base mb-1.5 leading-snug hover:text-[#00c44f] transition-colors line-clamp-2">
+          <h3 className="font-bold text-base mb-1.5 leading-snug hover:text-[var(--emerald-500)] transition-colors line-clamp-2" style={{ color: 'var(--text-primary)' }}>
             {post.title}
           </h3>
         )}
@@ -178,24 +178,20 @@ export function PostCard({ post, onDelete, compact = false, showCommunity = true
         </p>
       </Link>
 
-      {/* Image */}
       {post.imageUrl && !compact && (
-        <div className="mt-3 rounded-xl overflow-hidden border" style={{ borderColor: 'rgba(255,255,255,0.07)' }}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
+        <div className="mt-3 rounded-xl overflow-hidden border" style={{ borderColor: 'var(--border-primary)' }}>
           <img src={post.imageUrl} alt="Post" className="w-full max-h-72 object-cover" />
         </div>
       )}
 
-      {/* Actions */}
       <div className="flex items-center gap-1 mt-4">
-        {/* Vote */}
-        <div className="flex items-center rounded-lg overflow-hidden" style={{ border: '1px solid rgba(255,255,255,0.07)', background: 'rgba(255,255,255,0.02)' }}>
+        <div className="flex items-center rounded-lg overflow-hidden" style={{ border: '1px solid var(--border-primary)', background: 'var(--bg-secondary)' }}>
           <button onClick={() => vote('UPVOTE')}
             className={cn('vote-btn', post.currentUserVote === 'UPVOTE' && 'vote-up-active')}>
             <ArrowUp className="w-3.5 h-3.5" />
             <span>{fmtNum(post.upvotesCount)}</span>
           </button>
-          <div className="w-px h-5" style={{ background: 'rgba(255,255,255,0.07)' }} />
+          <div className="w-px h-5" style={{ background: 'var(--border-primary)' }} />
           <button onClick={() => vote('DOWNVOTE')}
             className={cn('vote-btn', post.currentUserVote === 'DOWNVOTE' && 'vote-down-active')}>
             <ArrowDown className="w-3.5 h-3.5" />
@@ -203,28 +199,24 @@ export function PostCard({ post, onDelete, compact = false, showCommunity = true
           </button>
         </div>
 
-        {/* Score indicator */}
         {score !== 0 && (
-          <span className="text-xs font-semibold px-2" style={{ color: score > 0 ? '#00c44f' : '#ff6b6b' }}>
+          <span className="text-xs font-bold px-2" style={{ color: score > 0 ? 'var(--emerald-500)' : '#ef4444' }}>
             {score > 0 ? '+' : ''}{fmtNum(score)}
           </span>
         )}
 
-        {/* Replies */}
         <Link href={`/posts/${post.id}`}
           className="vote-btn ml-1">
           <MessageSquare className="w-3.5 h-3.5" />
           <span>{fmtNum(post.repliesCount)}</span>
         </Link>
 
-        {/* Save */}
         <button onClick={save}
-          className={cn('vote-btn', post.isSaved && 'text-[#00c44f]')}
-          style={post.isSaved ? { color: '#00c44f' } : {}}>
-          {post.isSaved ? <BookmarkCheck className="w-3.5 h-3.5" /> : <Bookmark className="w-3.5 h-3.5" />}
+          className={cn('vote-btn', post.isSaved && 'text-[var(--emerald-500)]')}
+          style={post.isSaved ? { color: 'var(--emerald-500)' } : {}}>
+          {post.isSaved ? <BookmarkCheck className="w-4 h-4" /> : <Bookmark className="w-4 h-4" />}
         </button>
 
-        {/* Share */}
         <button onClick={share} className="vote-btn">
           <Share2 className="w-3.5 h-3.5" />
         </button>

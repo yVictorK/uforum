@@ -31,9 +31,9 @@ export function Modal({ open, onClose, title, children, size = 'md' }: ModalProp
             exit={{ opacity: 0, scale: 0.94, y: 8 }}
             transition={{ type: 'spring', damping: 28, stiffness: 320 }}
             className={cn('relative w-full card z-10 max-h-[90vh] overflow-y-auto', modalSizes[size])}
-            style={{ background: '#1a1a1a', border: '1px solid rgba(255,255,255,0.1)' }}>
+            style={{ background: 'var(--bg-tertiary)', border: '1px solid var(--border-primary)' }}>
             {title && (
-              <div className="flex items-center justify-between p-5 border-b" style={{ borderColor: 'rgba(255,255,255,0.07)' }}>
+              <div className="flex items-center justify-between p-5 border-b" style={{ borderColor: 'var(--border-primary)' }}>
                 <h2 className="font-bold text-base">{title}</h2>
                 <button onClick={onClose} className="btn-ghost p-1.5 rounded-lg"><X className="w-4 h-4" /></button>
               </div>
@@ -93,11 +93,11 @@ export function Empty({ icon: Icon, title, description, action }: EmptyProps) {
   return (
     <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
       <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4"
-        style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
-        <Icon className="w-7 h-7" style={{ color: 'rgba(255,255,255,0.2)' }} />
+        style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-primary)' }}>
+        <Icon className="w-7 h-7" style={{ color: 'var(--text-muted)' }} />
       </div>
-      <p className="font-semibold mb-1">{title}</p>
-      {description && <p className="text-sm text-muted max-w-xs">{description}</p>}
+      <p className="font-semibold mb-1" style={{ color: 'var(--text-primary)' }}>{title}</p>
+      {description && <p className="text-sm max-w-xs" style={{ color: 'var(--text-muted)' }}>{description}</p>}
       {action && <div className="mt-5">{action}</div>}
     </div>
   )

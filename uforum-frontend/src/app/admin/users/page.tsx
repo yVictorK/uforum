@@ -67,8 +67,8 @@ export default function AdminUsersPage() {
   }
 
   const usersList = usersData?.content || []
-  const filteredUsers = search ? usersList.filter((u: any) => 
-    u.username.toLowerCase().includes(search.toLowerCase()) || 
+  const filteredUsers = search ? usersList.filter((u: any) =>
+    u.username.toLowerCase().includes(search.toLowerCase()) ||
     u.fullName.toLowerCase().includes(search.toLowerCase())
   ) : usersList;
 
@@ -90,7 +90,6 @@ export default function AdminUsersPage() {
         <p className="text-sm mt-1 text-zinc-400">Gerenciamento de usuários e moderação avançada.</p>
       </div>
 
-      {/* Bento Grid Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
         {[
           { icon: Users, label: 'Total de Usuários', value: metrics?.totalUsers, load: loadingMetrics, color: 'text-emerald-500' },
@@ -110,7 +109,6 @@ export default function AdminUsersPage() {
         ))}
       </div>
 
-      {/* Users Table / List */}
       <div className="card overflow-hidden">
         <div className="p-4 border-b border-zinc-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <h2 className="font-bold text-lg flex items-center gap-2">
@@ -118,7 +116,7 @@ export default function AdminUsersPage() {
           </h2>
           <div className="relative w-full sm:w-64">
             <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" />
-            <input 
+            <input
               value={search} onChange={e => setSearch(e.target.value)}
               placeholder="Buscar usuário..."
               className="w-full bg-zinc-950/50 border border-zinc-700/50 rounded-lg pl-9 pr-3 py-2 text-sm focus:outline-none focus:border-emerald-500 transition-colors"
@@ -129,7 +127,7 @@ export default function AdminUsersPage() {
         <div className="overflow-x-auto min-h-[300px]">
           {loadingUsers ? (
             <div className="p-4 space-y-3">
-              {[1,2,3].map(i => <Sk key={i} className="w-full h-16 rounded-xl" />)}
+              {[1, 2, 3].map(i => <Sk key={i} className="w-full h-16 rounded-xl" />)}
             </div>
           ) : (
             <table className="w-full text-left text-sm whitespace-nowrap">
@@ -175,8 +173,7 @@ export default function AdminUsersPage() {
                     </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-3">
-                        {/* Selector de Cargo (Native, proof against overflow-clipping) */}
-                        <select 
+                        <select
                           value={u.role}
                           onChange={(e) => changeRole({ id: u.id, role: e.target.value })}
                           disabled={user.role === 'MODERATOR' && (u.role === 'ADMIN' || u.role === 'MODERATOR')}
@@ -185,14 +182,12 @@ export default function AdminUsersPage() {
                           <option value="STUDENT">Student</option>
                           <option value="EVENT_MANAGER">Event Manager</option>
                           <option value="PROFESSOR">Professor</option>
-                          {/* Somente Admin gerencia cargos superiores */}
                           {user.role === 'ADMIN' && <option value="MODERATOR">Moderator</option>}
                           {user.role === 'ADMIN' && <option value="ADMIN">Admin</option>}
                         </select>
 
-                        {/* Botão de Ban/Unban */}
                         <button
-                          onClick={() => { if(window.confirm(`Deseja ${u.isActive ? 'banir' : 'desbanir'} este usuário?`)) toggleStatus(u.id) }}
+                          onClick={() => { if (window.confirm(`Deseja ${u.isActive ? 'banir' : 'desbanir'} este usuário?`)) toggleStatus(u.id) }}
                           disabled={u.role === 'ADMIN' && user.role === 'MODERATOR'}
                           title={u.isActive ? 'Banir Usuário' : 'Desbanir Usuário'}
                           className={`p-1.5 rounded-lg transition-colors disabled:opacity-30 disabled:cursor-not-allowed ${u.isActive ? 'hover:bg-rose-500/20 text-rose-500' : 'hover:bg-emerald-500/20 text-emerald-500'}`}
@@ -215,9 +210,8 @@ export default function AdminUsersPage() {
           )}
         </div>
 
-        {/* Pagination placeholder (MVP) */}
         <div className="p-4 border-t border-zinc-800 bg-zinc-900/30 flex justify-end">
-           <p className="text-xs text-zinc-500">Mostrando até 20 registros por página.</p>
+          <p className="text-xs text-zinc-500">Mostrando até 20 registros por página.</p>
         </div>
       </div>
     </div>

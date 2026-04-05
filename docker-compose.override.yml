@@ -1,0 +1,20 @@
+# ============================================================
+#  UForum — Docker Compose Override (MODO DESENVOLVIMENTO)
+#  Este arquivo é lido automaticamente junto com o original.
+#  Para rodar em Dev com Hot Reload: docker compose up
+#  Para rodar em Prod (build final): docker compose -f docker-compose.yml up
+# ============================================================
+
+services:
+  frontend:
+    build:
+      context: ./uforum-frontend
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ./uforum-frontend:/app             
+      - /app/node_modules               
+      - /app/.next                   
+    environment:
+      - WATCHPACK_POLLING=true           
+      - NEXT_PUBLIC_API_URL=http://localhost:8080/api/v1
+    command: npm run dev                  

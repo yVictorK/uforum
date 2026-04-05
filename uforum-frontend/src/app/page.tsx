@@ -7,12 +7,11 @@ import { Footer } from '@/components/layout/Footer'
 export default function HomePage() {
   return (
     <>
-      {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50 glass h-16 border-b border-zinc-800/50">
         <div className="page-wrap h-full flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="text-emerald-400">
-               <Logo size={24} />
+              <Logo size={24} />
             </div>
             <span className="font-bold text-lg tracking-tight font-sans text-zinc-100">UForum</span>
           </div>
@@ -23,10 +22,9 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* Main Content Sections */}
       <main className="w-full">
-         <VideoScrubSection />
-         <BentoGrid />
+        <VideoScrubSection />
+        <BentoGrid />
       </main>
 
       <Footer />

@@ -22,7 +22,7 @@ export default function EventsPage() {
   const canCreate = user?.role === 'ADMIN' || user?.role === 'EVENT_MANAGER'
 
   return (
-    <div className="page-wrap py-6">
+    <div className="page-wrap pt-5 pb-6 sm:py-6">
       <div className="mb-6 flex items-start justify-between">
         <div>
           <h1 className="text-2xl font-black">Eventos</h1>

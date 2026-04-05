@@ -34,7 +34,6 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex" style={{ background: '#0d0d0d' }}>
-      {/* Left panel */}
       <div className="hidden lg:flex flex-1 items-center justify-center p-12 relative overflow-hidden border-r" style={{ borderColor: 'rgba(255,255,255,0.07)' }}>
         <div className="absolute inset-0" style={{ background: 'radial-gradient(circle at 30% 50%, rgba(0,196,79,0.06) 0%, transparent 70%)' }} />
         <div className="relative z-10 max-w-sm">
@@ -54,7 +53,6 @@ export default function LoginPage() {
         </div>
       </div>
 
-      {/* Right panel */}
       <div className="flex-1 flex items-center justify-center p-6">
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-sm">
           <Link href="/" className="inline-flex items-center gap-2 mb-10 lg:hidden">
@@ -85,8 +83,8 @@ export default function LoginPage() {
               <div className="relative">
                 <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'rgba(255,255,255,0.25)' }} />
                 <input {...register('password')} type={showPassword ? 'text' : 'password'} placeholder="••••••••" className="input px-10" />
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-zinc-500 hover:text-white transition-colors"
                 >

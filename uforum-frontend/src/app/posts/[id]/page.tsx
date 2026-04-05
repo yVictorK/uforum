@@ -33,28 +33,27 @@ export default function PostPage({ params }: { params: Promise<{ id: string }> }
 
   const refetchAll = () => { rPost(); rReplies() }
 
-  // When post voted/saved on this page, also invalidate feed so counters sync when navigating back
   const handlePostUpdate = () => {
     qc.invalidateQueries({ queryKey: ['feed'] })
     refetchAll()
   }
 
   return (
-    <div className="feed-wrap py-6">
-      <Link href="/feed" className="inline-flex items-center gap-2 text-sm mb-4 group" style={{ color: 'rgba(255,255,255,0.4)' }}>
+    <div className="page-wrap pt-12 pb-6 sm:py-6 max-w-3xl">
+      <Link href="/feed" className="inline-flex items-center gap-2 text-sm mb-4 group pt-4" style={{ color: 'var(--text-muted)' }}>
         <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />Voltar
       </Link>
 
       {pLoading ? <PostSk /> : post ? (
         <PostCard post={post} onDelete={() => window.history.back()} showCommunity />
       ) : (
-        <div className="card p-8 text-center" style={{ color: 'rgba(255,255,255,0.3)' }}>Post não encontrado</div>
+        <div className="card p-8 text-center" style={{ color: 'var(--text-muted)' }}>Post não encontrado</div>
       )}
 
       {post && !post.isDeleted && (
         <div className="flex items-center justify-between my-5 px-1">
-          <h2 className="font-bold flex items-center gap-2 text-sm" style={{ color: 'rgba(255,255,255,0.6)' }}>
-            <MessageSquare className="w-4 h-4" style={{ color: '#00c44f' }} />
+          <h2 className="font-bold flex items-center gap-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
+            <MessageSquare className="w-4 h-4" style={{ color: 'var(--emerald-500)' }} />
             {post.repliesCount} {post.repliesCount === 1 ? 'resposta' : 'respostas'}
           </h2>
           {isAuthenticated && (
@@ -114,12 +113,12 @@ function ReplyThread({ reply, depth, onDelete }: { reply: Post; depth: number; o
   }
 
   return (
-    <div className={depth > 0 ? 'pl-4 border-l' : ''} style={depth > 0 ? { borderColor: 'rgba(0,196,79,0.15)' } : {}}>
+    <div className={depth > 0 ? 'pl-4 border-l ml-3 md:ml-6' : ''} style={depth > 0 ? { borderColor: 'var(--border-primary)' } : {}}>
       <PostCard post={reply} showCommunity={false} compact={depth > 1} onDelete={handleReplyDelete} />
       {reply.repliesCount > 0 && depth < 4 && (
         <button onClick={() => setShowReplies(!showReplies)}
-          className="ml-4 mt-1 mb-2 text-xs flex items-center gap-1"
-          style={{ color: '#00c44f' }}>
+          className="ml-4 mt-1 mb-2 text-xs flex items-center gap-1 font-semibold"
+          style={{ color: 'var(--emerald-500)' }}>
           <MessageSquare className="w-3 h-3" />
           {showReplies ? 'Ocultar' : `Ver ${reply.repliesCount} resposta${reply.repliesCount > 1 ? 's' : ''}`}
         </button>
@@ -134,8 +133,8 @@ function ReplyThread({ reply, depth, onDelete }: { reply: Post; depth: number; o
       {isAuthenticated && depth < 4 && (
         <>
           <button onClick={() => setNestedOpen(true)}
-            className="ml-4 mt-1 text-xs hover:underline"
-            style={{ color: 'rgba(255,255,255,0.3)' }}>
+            className="ml-4 mt-1 text-xs hover:underline font-medium"
+            style={{ color: 'var(--text-muted)' }}>
             Responder
           </button>
           <CreatePostModal open={nestedOpen} onClose={() => setNestedOpen(false)} parentId={reply.id}
@@ -143,7 +142,7 @@ function ReplyThread({ reply, depth, onDelete }: { reply: Post; depth: number; o
               setNestedOpen(false)
               setShowReplies(true)
               refetch()
-              onDelete() // propagate to parent to update repliesCount
+              onDelete()
             }} />
         </>
       )}

@@ -17,12 +17,11 @@ import type { Post, Page, Community, Product, MapBlock } from '@/types'
 import { motion, AnimatePresence } from 'framer-motion'
 import toast from 'react-hot-toast'
 
-// Leaflet loaded dynamically — no SSR
 const LeafletMap = dynamic(() => import('@/components/map/LeafletMap'), {
   ssr: false,
   loading: () => (
-    <div className="w-full h-full flex items-center justify-center" style={{ background: '#161616' }}>
-      <div className="w-5 h-5 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#00c44f', borderTopColor: 'transparent' }} />
+    <div className="w-full h-full flex items-center justify-center rounded-2xl" style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-primary)' }}>
+      <div className="w-5 h-5 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: 'var(--emerald-500)', borderTopColor: 'transparent' }} />
     </div>
   )
 })
@@ -45,11 +44,10 @@ export default function FeedInner() {
   useEffect(() => {
     navigator.geolocation?.getCurrentPosition(
       (p) => setUserPos([p.coords.latitude, p.coords.longitude]),
-      () => {}
+      () => { }
     )
   }, [])
 
-  // ── Feed posts ──────────────────────────────────────────────
   const isFollowingTab = tab === 'seguindo' && isAuthenticated && !q
 
   const generalFeed = useInfiniteQuery({
@@ -73,12 +71,10 @@ export default function FeedInner() {
   const activeFeed = isFollowingTab ? followingFeed : generalFeed
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = activeFeed
 
-  // FIX: when new post created, reset pages so it appears at top
   const handlePostCreated = () => {
     qc.resetQueries({ queryKey: ['feed'] })
   }
 
-  // ── Sidebar data ─────────────────────────────────────────────
   const { data: commData, isLoading: commLoading } = useQuery({
     queryKey: ['comms-suggested'],
     queryFn: () => communitiesApi.list(0).then((r) => r.data),
@@ -99,27 +95,37 @@ export default function FeedInner() {
   const products: Product[] = productsData?.content?.slice(0, 6) ?? []
 
   return (
-    <div className="page-wrap py-6">
+    <div className="page-wrap pt-5 pb-6 sm:py-6">
       <div className="flex gap-6">
 
-        {/* ── Main feed column ── */}
         <div className="flex-1 min-w-0 space-y-4">
 
-          {/* Search header */}
           {q && (
             <div className="mb-2">
-              <h1 className="font-bold text-lg">Busca: <span style={{ color: '#00c44f' }}>&ldquo;{q}&rdquo;</span></h1>
-              <p className="text-sm" style={{ color: 'rgba(255,255,255,0.35)' }}>{posts.length} resultados</p>
+              <h1 className="font-bold text-lg">Busca: <span style={{ color: 'var(--emerald-500)' }}>&ldquo;{q}&rdquo;</span></h1>
+              <p className="text-sm" style={{ color: 'var(--text-muted)' }}>{posts.length} resultados</p>
             </div>
           )}
 
-          {/* ── Feed tabs: Geral / Seguindo ── */}
+          {!q && (
+            <div className="lg:hidden rounded-2xl overflow-hidden border mb-4" style={{ borderColor: 'var(--border-primary)', height: 240 }}>
+              <LeafletMap
+                blocks={mapBlocks as MapBlock[]}
+                selected={selectedBlock}
+                userPos={userPos}
+                onSelect={setSelectedBlock}
+                showExpandButton
+              />
+            </div>
+          )}
+
+
           {!q && (
             <div className="flex items-center justify-between">
-              <div className="flex gap-1 p-1 rounded-xl" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
+              <div className="flex gap-1 p-1 rounded-xl" style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-primary)' }}>
                 <button onClick={() => setTab('geral')}
                   className={cn('flex items-center gap-1.5 px-5 py-2 rounded-lg text-sm font-semibold transition-all')}
-                  style={tab === 'geral' ? { background: '#00c44f', color: '#000' } : { color: 'rgba(255,255,255,0.45)' }}>
+                  style={tab === 'geral' ? { background: 'var(--emerald-500)', color: '#fff' } : { color: 'var(--text-muted)' }}>
                   <Globe className="w-3.5 h-3.5" />Geral
                 </button>
                 <button onClick={() => {
@@ -127,7 +133,7 @@ export default function FeedInner() {
                   setTab('seguindo')
                 }}
                   className={cn('flex items-center gap-1.5 px-5 py-2 rounded-lg text-sm font-semibold transition-all')}
-                  style={tab === 'seguindo' ? { background: '#00c44f', color: '#000' } : { color: 'rgba(255,255,255,0.45)' }}>
+                  style={tab === 'seguindo' ? { background: 'var(--emerald-500)', color: '#fff' } : { color: 'var(--text-muted)' }}>
                   <Users className="w-3.5 h-3.5" />Seguindo
                 </button>
               </div>
@@ -140,28 +146,27 @@ export default function FeedInner() {
             </div>
           )}
 
-          {/* Create prompt */}
           {isAuthenticated && !q && (
             <button onClick={() => setCreateOpen(true)}
-              className="card w-full p-4 flex items-center gap-3 hover:bg-[#1a1a1a] transition-all text-left">
+              className="card w-full p-4 flex items-center gap-3 hover:bg-[var(--bg-secondary)] transition-all text-left">
               <div className="w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0"
-                style={{ background: 'rgba(0,196,79,0.1)', border: '1px solid rgba(0,196,79,0.2)', color: '#00c44f' }}>
+                style={{ background: 'var(--emerald-500)', color: '#fff' }}>
                 {user?.fullName?.[0] ?? 'U'}
               </div>
-              <span className="text-sm" style={{ color: 'rgba(255,255,255,0.3)' }}>
+              <span className="text-sm font-medium" style={{ color: 'var(--text-muted)' }}>
                 O que você está pensando, {user?.fullName?.split(' ')[0]}?
               </span>
             </button>
           )}
 
-          {/* ── Marketplace carousel (only on geral tab, no search) ── */}
+
           {!q && tab === 'geral' && (
             <section>
               <div className="flex items-center justify-between mb-3">
-                <h2 className="text-sm font-bold flex items-center gap-1.5" style={{ color: 'rgba(255,255,255,0.6)' }}>
-                  <ShoppingBag className="w-4 h-4" style={{ color: '#00c44f' }} />Marketplace
+                <h2 className="text-sm font-bold flex items-center gap-1.5" style={{ color: 'var(--text-secondary)' }}>
+                  <ShoppingBag className="w-4 h-4" style={{ color: 'var(--emerald-500)' }} />Marketplace
                 </h2>
-                <Link href="/marketplace" className="text-xs font-semibold flex items-center gap-0.5 hover:underline" style={{ color: '#00c44f' }}>
+                <Link href="/marketplace" className="text-xs font-semibold flex items-center gap-0.5" style={{ color: 'var(--emerald-500)' }}>
                   Ver mais <ChevronRight className="w-3.5 h-3.5" />
                 </Link>
               </div>
@@ -184,10 +189,10 @@ export default function FeedInner() {
                       <ProductCard product={p} compact />
                     </Link>
                   ))}
-                  <Link href="/marketplace" className="flex-shrink-0 w-28 flex items-center justify-center card hover:bg-[#1a1a1a] transition-all">
+                  <Link href="/marketplace" className="flex-shrink-0 w-28 flex items-center justify-center card hover:bg-[var(--bg-secondary)] transition-all">
                     <div className="text-center">
-                      <ChevronRight className="w-5 h-5 mx-auto mb-1" style={{ color: '#00c44f' }} />
-                      <span className="text-xs font-semibold" style={{ color: '#00c44f' }}>Ver tudo</span>
+                      <ChevronRight className="w-5 h-5 mx-auto mb-1" style={{ color: 'var(--emerald-500)' }} />
+                      <span className="text-xs font-semibold" style={{ color: 'var(--emerald-500)' }}>Ver tudo</span>
                     </div>
                   </Link>
                 </div>
@@ -195,14 +200,13 @@ export default function FeedInner() {
             </section>
           )}
 
-          {/* ── Communities carousel (only on geral tab, no search) ── */}
           {!q && tab === 'geral' && (
             <section>
               <div className="flex items-center justify-between mb-3">
-                <h2 className="text-sm font-bold flex items-center gap-1.5" style={{ color: 'rgba(255,255,255,0.6)' }}>
-                  <Hash className="w-4 h-4" style={{ color: '#00c44f' }} />Comunidades
+                <h2 className="text-sm font-bold flex items-center gap-1.5" style={{ color: 'var(--text-secondary)' }}>
+                  <Hash className="w-4 h-4" style={{ color: 'var(--emerald-500)' }} />Comunidades
                 </h2>
-                <Link href="/communities" className="text-xs font-semibold flex items-center gap-0.5 hover:underline" style={{ color: '#00c44f' }}>
+                <Link href="/communities" className="text-xs font-semibold flex items-center gap-0.5 hover:underline" style={{ color: 'var(--emerald-500)' }}>
                   Ver mais <ChevronRight className="w-3.5 h-3.5" />
                 </Link>
               </div>
@@ -219,10 +223,10 @@ export default function FeedInner() {
                       <CommunityCard community={c} />
                     </div>
                   ))}
-                  <Link href="/communities" className="flex-shrink-0 w-28 flex items-center justify-center card hover:bg-[#1a1a1a] transition-all">
+                  <Link href="/communities" className="flex-shrink-0 w-28 flex items-center justify-center card hover:bg-[var(--bg-secondary)] transition-all">
                     <div className="text-center">
-                      <ChevronRight className="w-5 h-5 mx-auto mb-1" style={{ color: '#00c44f' }} />
-                      <span className="text-xs font-semibold" style={{ color: '#00c44f' }}>Ver tudo</span>
+                      <ChevronRight className="w-5 h-5 mx-auto mb-1" style={{ color: 'var(--emerald-500)' }} />
+                      <span className="text-xs font-semibold" style={{ color: 'var(--emerald-500)' }}>Ver tudo</span>
                     </div>
                   </Link>
                 </div>
@@ -230,39 +234,6 @@ export default function FeedInner() {
             </section>
           )}
 
-          {/* ── Map mini-widget (mobile only, collapsible) ── */}
-          <div className="lg:hidden">
-            <button
-              onClick={() => setMapOpen(!mapOpen)}
-              className="w-full card p-3 flex items-center justify-between hover:bg-[#1a1a1a] transition-all"
-            >
-              <span className="flex items-center gap-2 text-sm font-semibold">
-                <MapPin className="w-4 h-4" style={{ color: '#00c44f' }} />
-                Mapa do Campus UFAM
-              </span>
-              <ChevronRight className={cn('w-4 h-4 transition-transform', mapOpen && 'rotate-90')} style={{ color: 'rgba(255,255,255,0.35)' }} />
-            </button>
-            <AnimatePresence>
-              {mapOpen && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: 280, opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  className="overflow-hidden rounded-b-2xl border-x border-b"
-                  style={{ borderColor: 'rgba(255,255,255,0.07)' }}
-                >
-                  <LeafletMap
-                    blocks={mapBlocks as MapBlock[]}
-                    selected={selectedBlock}
-                    userPos={userPos}
-                    onSelect={setSelectedBlock}
-                  />
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-
-          {/* ── Posts list ── */}
           <div>
             {tab === 'seguindo' && (
               <p className="text-xs mb-3 font-medium" style={{ color: 'rgba(255,255,255,0.3)' }}>
@@ -278,8 +249,8 @@ export default function FeedInner() {
                 title={q ? 'Nenhum resultado' : tab === 'seguindo' ? 'Nada por aqui ainda' : 'Nenhum post ainda'}
                 description={
                   q ? 'Tente outros termos'
-                  : tab === 'seguindo' ? 'Siga pessoas para ver os posts delas aqui'
-                  : 'Seja o primeiro a postar!'
+                    : tab === 'seguindo' ? 'Siga pessoas para ver os posts delas aqui'
+                      : 'Seja o primeiro a postar!'
                 }
                 action={
                   tab === 'seguindo' ? (
@@ -307,65 +278,64 @@ export default function FeedInner() {
           </div>
         </div>
 
-        {/* ── Right sidebar (desktop only) ── */}
-        <aside className="hidden lg:flex w-72 flex-shrink-0 flex-col gap-4">
-
-          {/* Map widget */}
-          <div className="card overflow-hidden sticky top-20" style={{ height: 260 }}>
-            <div className="flex items-center justify-between px-3 pt-3 pb-2">
-              <span className="text-xs font-bold flex items-center gap-1.5 uppercase tracking-wider" style={{ color: 'rgba(255,255,255,0.35)' }}>
-                <MapPin className="w-3.5 h-3.5" style={{ color: '#00c44f' }} />Campus UFAM
-              </span>
-              <Link href="/map" className="text-xs hover:underline" style={{ color: '#00c44f' }}>
-                Expandir
-              </Link>
+        <aside className="hidden lg:block w-72 flex-shrink-0">
+          <div className="sticky top-20 space-y-4">
+            <div className="card overflow-hidden">
+              <div className="flex items-center justify-between px-3 pt-3 pb-2">
+                <span className="text-xs font-bold flex items-center gap-1.5 uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
+                  <MapPin className="w-3.5 h-3.5" style={{ color: 'var(--emerald-500)' }} />Campus UFAM
+                </span>
+                <Link href="/map" className="text-xs font-semibold" style={{ color: 'var(--emerald-500)' }}>
+                  Expandir
+                </Link>
+              </div>
+              <div style={{ height: 210 }}>
+                <LeafletMap
+                  blocks={mapBlocks as MapBlock[]}
+                  selected={selectedBlock}
+                  userPos={userPos}
+                  onSelect={(b) => setSelectedBlock(b)}
+                  showExpandButton
+                />
+              </div>
             </div>
-            <div style={{ height: 210 }}>
-              <LeafletMap
-                blocks={mapBlocks as MapBlock[]}
-                selected={selectedBlock}
-                userPos={userPos}
-                onSelect={(b) => {
-                  setSelectedBlock(b)
-                }}
-              />
-            </div>
-          </div>
 
-          {/* Selected block info */}
-          <AnimatePresence>
-            {selectedBlock && (
-              <motion.div
-                initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
-                className="card p-3"
-                style={{ borderColor: 'rgba(0,196,79,0.2)', background: 'rgba(0,196,79,0.04)' }}
-              >
-                <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <p className="font-bold text-sm">{selectedBlock.name}</p>
-                    <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.4)' }}>
-                      {selectedBlock.code} · {selectedBlock.floorCount} andares
-                    </p>
-                    {selectedBlock.description && (
-                      <p className="text-xs mt-1.5 leading-relaxed" style={{ color: 'rgba(255,255,255,0.35)' }}>
-                        {selectedBlock.description}
+            <AnimatePresence>
+              {selectedBlock && (
+                <motion.div
+                  key="selected-block"
+                  initial={{ opacity: 0, y: -8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  className="card p-3 border shadow-lg"
+                  style={{ borderColor: 'var(--emerald-500)', background: 'var(--bg-tertiary)' }}
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <p className="font-bold text-sm" style={{ color: 'var(--text-primary)' }}>{selectedBlock.name}</p>
+                      <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
+                        {selectedBlock.code} · {selectedBlock.floorCount} andares
                       </p>
-                    )}
+                      {selectedBlock.description && (
+                        <p className="text-xs mt-1.5 leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+                          {selectedBlock.description}
+                        </p>
+                      )}
+                    </div>
+                    <button onClick={() => setSelectedBlock(null)} className="btn-ghost p-1 flex-shrink-0">
+                      <X className="w-3.5 h-3.5" />
+                    </button>
                   </div>
-                  <button onClick={() => setSelectedBlock(null)} className="btn-ghost p-1 flex-shrink-0">
-                    <X className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
-          {/* UForum info card */}
-          <div className="card p-4" style={{ background: 'rgba(0,196,79,0.04)', borderColor: 'rgba(0,196,79,0.12)' }}>
-            <h3 className="font-bold text-sm mb-2">🎓 UForum</h3>
-            <p className="text-xs leading-relaxed" style={{ color: 'rgba(255,255,255,0.4)' }}>
-              A rede social exclusiva da UFAM. Cadastre-se com seu email institucional.
-            </p>
+            <div className="card p-4" style={{ background: 'var(--bg-secondary)', borderColor: 'var(--border-primary)' }}>
+              <h3 className="font-bold text-sm mb-2" style={{ color: 'var(--text-primary)' }}>🎓 UForum</h3>
+              <p className="text-xs leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+                A rede social exclusiva da UFAM. Cadastre-se com seu email institucional.
+              </p>
+            </div>
           </div>
         </aside>
       </div>

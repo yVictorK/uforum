@@ -29,15 +29,13 @@ export function EventCard({ event: init, onUpdate }: { event: Event; onUpdate?: 
 
   return (
     <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
-      className="card overflow-hidden group hover:bg-[#1a1a1a] hover:border-[rgba(255,255,255,0.12)] transition-all duration-200">
-      {/* Cover */}
+      className="card overflow-hidden group hover:bg-[var(--bg-secondary)] hover:border-[var(--emerald-500)]/20 transition-all duration-200">
       <div className="relative h-36 overflow-hidden">
         {e.imageUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
           <img src={e.imageUrl} alt={e.title} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
         ) : (
-          <div className="w-full h-full flex items-center justify-center" style={{ background: 'linear-gradient(135deg, rgba(0,196,79,0.1), rgba(0,196,79,0.04))' }}>
-            <CalendarDays className="w-10 h-10" style={{ color: 'rgba(0,196,79,0.3)' }} />
+          <div className="w-full h-full flex items-center justify-center bg-[var(--bg-secondary)]">
+            <CalendarDays className="w-10 h-10" style={{ color: 'var(--emerald-500)', opacity: 0.2 }} />
           </div>
         )}
         {isPast && (
@@ -55,18 +53,18 @@ export function EventCard({ event: init, onUpdate }: { event: Event; onUpdate?: 
       <div className="p-4 space-y-3">
         <div>
           <Link href={`/events/${e.id}`}>
-            <h3 className="font-bold text-sm leading-snug hover:text-[#00c44f] transition-colors line-clamp-2">{e.title}</h3>
+            <h3 className="font-bold text-sm leading-snug hover:text-[var(--emerald-500)] transition-colors line-clamp-2" style={{ color: 'var(--text-primary)' }}>{e.title}</h3>
           </Link>
           <p className="text-xs mt-1 line-clamp-2" style={{ color: 'var(--text-muted)' }}>{e.description}</p>
         </div>
 
         <div className="space-y-1.5 text-xs" style={{ color: 'var(--text-muted)' }}>
           <div className="flex items-center gap-1.5">
-            <CalendarDays className="w-3.5 h-3.5 flex-shrink-0" style={{ color: '#00c44f' }} />
+            <CalendarDays className="w-3.5 h-3.5 flex-shrink-0" style={{ color: 'var(--emerald-500)' }} />
             <span>{fmtDate(e.startDate)}</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <MapPin className="w-3.5 h-3.5 flex-shrink-0" style={{ color: '#00c44f' }} />
+            <MapPin className="w-3.5 h-3.5 flex-shrink-0" style={{ color: 'var(--emerald-500)' }} />
             <span className="line-clamp-1">{e.location}</span>
           </div>
           <div className="flex items-center gap-1.5">
@@ -79,7 +77,7 @@ export function EventCard({ event: init, onUpdate }: { event: Event; onUpdate?: 
           className={cn('w-full py-2 rounded-xl text-sm font-semibold transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed',
             e.isAttending ? 'btn-outline' : isPast ? '' : 'btn-green'
           )}
-          style={isPast && !e.isAttending ? { background: 'rgba(255,255,255,0.04)', color: 'var(--text-muted)', border: '1px solid rgba(255,255,255,0.07)' } : {}}>
+          style={isPast && !e.isAttending ? { background: 'var(--bg-secondary)', color: 'var(--text-muted)', border: '1px solid var(--border-primary)' } : {}}>
           {busy ? '...' : e.isAttending ? 'Cancelar presença' : isPast ? 'Encerrado' : 'Confirmar Presença'}
         </button>
       </div>

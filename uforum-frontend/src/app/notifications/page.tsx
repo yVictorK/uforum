@@ -11,10 +11,10 @@ import toast from 'react-hot-toast'
 import Link from 'next/link'
 
 const typeIcon: Record<string, { icon: React.ElementType; color: string }> = {
-  POST_REPLY:  { icon: MessageSquare, color: '#00c44f' },
-  POST_UPVOTE: { icon: ArrowUp,       color: '#00c44f' },
-  NEW_FOLLOWER:{ icon: UserPlus,      color: '#a78bfa' },
-  EVENT_REMINDER: { icon: CalendarDays, color: '#fbbf24' },
+  POST_REPLY:  { icon: MessageSquare, color: 'var(--emerald-500)' },
+  POST_UPVOTE: { icon: ArrowUp,       color: 'var(--emerald-500)' },
+  NEW_FOLLOWER:{ icon: UserPlus,      color: '#a78bfa' }, // Keeping soft purple for followers
+  EVENT_REMINDER: { icon: CalendarDays, color: '#f59e0b' },
 }
 
 export default function NotificationsPage() {
@@ -37,18 +37,18 @@ export default function NotificationsPage() {
 
   if (!user) return (
     <div className="page-wrap py-16 text-center">
-      <Bell className="w-12 h-12 mx-auto mb-4" style={{ color: 'rgba(255,255,255,0.1)' }} />
-      <p className="mb-4" style={{ color: 'rgba(255,255,255,0.4)' }}>Faça login para ver suas notificações</p>
+      <Bell className="w-12 h-12 mx-auto mb-4 text-[var(--text-muted)] opacity-20" />
+      <p className="mb-4 text-[var(--text-muted)]">Faça login para ver suas notificações</p>
       <Link href="/auth/login" className="btn-green inline-flex">Entrar</Link>
     </div>
   )
 
   return (
-    <div className="page-wrap py-6 max-w-2xl">
-      <div className="flex items-center justify-between mb-6">
+    <div className="page-wrap pt-5 pb-6 sm:py-6 max-w-2xl">
+        <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-black">Notificações</h1>
-          {hasUnread && <p className="text-sm mt-0.5" style={{ color: '#00c44f' }}>{notifs.filter((n) => !n.isRead).length} não lidas</p>}
+          {hasUnread && <p className="text-sm mt-0.5" style={{ color: 'var(--emerald-500)' }}>{notifs.filter((n) => !n.isRead).length} não lidas</p>}
         </div>
         {hasUnread && (
           <button onClick={() => markAll.mutate()} disabled={markAll.isPending} className="btn-ghost text-sm flex items-center gap-1.5">
@@ -71,19 +71,19 @@ export default function NotificationsPage() {
             const meta = typeIcon[n.type] ?? { icon: Bell, color: 'rgba(255,255,255,0.3)' }
             const Icon = meta.icon
             return (
-              <div key={n.id} className={cn('card p-4 flex items-start gap-3 transition-all', !n.isRead && 'border-[rgba(0,196,79,0.15)] bg-[rgba(0,196,79,0.03)]')}>
+              <div key={n.id} className={cn('card p-4 flex items-start gap-3 transition-all', !n.isRead && 'border-[var(--emerald-500)]/20 bg-[var(--emerald-500)]/5')}>
                 {n.actor ? (
                   <Avatar src={n.actor.profilePictureUrl} name={n.actor.fullName} size="sm" />
                 ) : (
-                  <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(255,255,255,0.05)' }}>
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: 'var(--bg-secondary)' }}>
                     <Icon className="w-4 h-4" style={{ color: meta.color }} />
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
                   <p className="text-sm">{n.message}</p>
-                  <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.3)' }}>{timeAgo(n.createdAt)}</p>
+                  <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>{timeAgo(n.createdAt)}</p>
                 </div>
-                {!n.isRead && <div className="w-2 h-2 rounded-full flex-shrink-0 mt-1.5" style={{ background: '#00c44f' }} />}
+                {!n.isRead && <div className="w-2 h-2 rounded-full flex-shrink-0 mt-1.5" style={{ background: 'var(--emerald-500)' }} />}
               </div>
             )
           })}

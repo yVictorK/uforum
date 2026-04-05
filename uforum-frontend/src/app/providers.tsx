@@ -2,13 +2,14 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { useState } from 'react'
 import { Toaster } from 'react-hot-toast'
+import { ThemeProvider } from '@/components/providers/ThemeProvider'
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [qc] = useState(() => new QueryClient({
     defaultOptions: {
       queries: {
-        staleTime: 30_000,        // 30s — data refetches more readily
-        gcTime: 5 * 60_000,       // 5min garbage collection
+        staleTime: 30_000,
+        gcTime: 5 * 60_000,
         retry: 1,
         refetchOnWindowFocus: true,
       },
@@ -17,21 +18,25 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
   return (
     <QueryClientProvider client={qc}>
-      {children}
-      <Toaster
-        position="bottom-right"
-        toastOptions={{
-          style: {
-            background: '#1e1e1e',
-            color: '#f0f0f0',
-            border: '1px solid rgba(255,255,255,0.08)',
-            borderRadius: '12px',
-            fontSize: '14px',
-          },
-          success: { iconTheme: { primary: '#00c44f', secondary: '#000' } },
-          duration: 3000,
-        }}
-      />
+      <ThemeProvider>
+        {children}
+        <Toaster
+          position="bottom-right"
+          toastOptions={{
+            style: {
+              background: '#18181b',
+              color: '#fafafa',
+              border: '1px solid rgba(255,255,255,0.1)',
+              borderRadius: '12px',
+              fontSize: '14px',
+            },
+            success: {
+              iconTheme: { primary: '#02833B', secondary: '#fff' }
+            },
+            duration: 3000,
+          }}
+        />
+      </ThemeProvider>
     </QueryClientProvider>
   )
 }

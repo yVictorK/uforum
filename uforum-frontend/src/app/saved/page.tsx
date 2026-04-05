@@ -11,7 +11,6 @@ import type { Post, Page } from '@/types'
 export default function SavedPage() {
   const { isAuthenticated } = useAuthStore()
 
-  // FIX: actually fetch saved posts from backend
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, refetch } = useInfiniteQuery({
     queryKey: ['saved-posts'],
     queryFn: ({ pageParam = 0 }) => usersApi.getSaved(pageParam as number).then((r) => r.data),

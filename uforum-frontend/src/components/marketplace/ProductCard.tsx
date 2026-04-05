@@ -8,7 +8,7 @@ import { motion } from 'framer-motion'
 
 interface Props {
   product: Product
-  compact?: boolean  // used in carousel — smaller layout
+  compact?: boolean
 }
 
 export function ProductCard({ product: p, compact = false }: Props) {
@@ -29,13 +29,11 @@ export function ProductCard({ product: p, compact = false }: Props) {
   }
 
   if (compact) {
-    // Compact carousel card
     return (
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-        className="card overflow-hidden hover:bg-[#1a1a1a] hover:border-[rgba(255,255,255,0.12)] transition-all duration-200 h-full">
-        <div className="h-28 overflow-hidden relative" style={{ background: 'rgba(255,255,255,0.02)' }}>
+        className="card overflow-hidden hover:bg-[var(--bg-secondary)] hover:border-[var(--emerald-500)]/20 transition-all duration-200 h-full">
+        <div className="h-28 overflow-hidden relative bg-[var(--bg-secondary)]">
           {img ? (
-            // eslint-disable-next-line @next/next/no-img-element
             <img src={img} alt={p.title} className="w-full h-full object-cover" />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
@@ -47,8 +45,8 @@ export function ProductCard({ product: p, compact = false }: Props) {
           </div>
         </div>
         <div className="p-2.5">
-          <p className="font-semibold text-xs line-clamp-2 leading-snug mb-1">{p.title}</p>
-          <p className="font-black text-sm" style={{ color: '#00c44f' }}>{fmtPrice(p.price)}</p>
+          <p className="font-semibold text-xs line-clamp-2 leading-snug mb-1" style={{ color: 'var(--text-primary)' }}>{p.title}</p>
+          <p className="font-black text-sm" style={{ color: 'var(--emerald-500)' }}>{fmtPrice(p.price)}</p>
         </div>
       </motion.div>
     )
@@ -56,11 +54,9 @@ export function ProductCard({ product: p, compact = false }: Props) {
 
   return (
     <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
-      className="card overflow-hidden group hover:bg-[#1a1a1a] hover:border-[rgba(255,255,255,0.12)] transition-all duration-200 flex flex-col">
-      {/* Image */}
-      <div className="h-44 overflow-hidden relative" style={{ background: 'rgba(255,255,255,0.02)' }}>
+      className="card overflow-hidden group hover:bg-[var(--bg-secondary)] hover:border-[var(--emerald-500)]/20 transition-all duration-200 flex flex-col">
+      <div className="h-44 overflow-hidden relative bg-[var(--bg-secondary)]">
         {img ? (
-          // eslint-disable-next-line @next/next/no-img-element
           <img src={img} alt={p.title} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
@@ -78,17 +74,15 @@ export function ProductCard({ product: p, compact = false }: Props) {
         )}
       </div>
 
-      {/* Info */}
       <div className="p-4 flex flex-col gap-2.5 flex-1">
         <div>
-          <h3 className="font-semibold text-sm line-clamp-2 leading-snug">{p.title}</h3>
-          {p.category && <span className="text-xs mt-0.5 block" style={{ color: '#00c44f' }}>{p.category}</span>}
+          <h3 className="font-semibold text-sm line-clamp-2 leading-snug" style={{ color: 'var(--text-primary)' }}>{p.title}</h3>
+          {p.category && <span className="text-xs mt-0.5 block font-medium" style={{ color: 'var(--emerald-500)' }}>{p.category}</span>}
         </div>
 
-        <p className="text-xl font-black" style={{ color: '#00c44f' }}>{fmtPrice(p.price)}</p>
+        <p className="text-xl font-black" style={{ color: 'var(--emerald-500)' }}>{fmtPrice(p.price)}</p>
 
-        {/* Seller */}
-        <div className="flex items-center gap-2 pt-2 mt-auto border-t" style={{ borderColor: 'rgba(255,255,255,0.07)' }}>
+        <div className="flex items-center gap-2 pt-2 mt-auto border-t" style={{ borderColor: 'var(--border-primary)' }}>
           <Link href={`/profile/${p.seller.username}`} className="flex items-center gap-1.5 flex-1 min-w-0">
             <Avatar src={p.seller.profilePictureUrl} name={p.seller.fullName} size="xs" />
             <span className="text-xs truncate" style={{ color: 'var(--text-muted)' }}>{p.seller.fullName}</span>
@@ -96,7 +90,6 @@ export function ProductCard({ product: p, compact = false }: Props) {
           <span className="text-xs flex-shrink-0" style={{ color: 'var(--text-muted)' }}>{timeAgo(p.createdAt)}</span>
         </div>
 
-        {/* WhatsApp */}
         {p.sellerWhatsapp && isAvail && (
           <button onClick={handleWA}
             className="w-full flex items-center justify-center gap-2 py-2 rounded-xl text-sm font-semibold transition-all duration-150"

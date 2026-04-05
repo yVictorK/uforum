@@ -1,7 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
-import { Search, Plus, ShoppingBag, SlidersHorizontal } from 'lucide-react'
+import { Search, Plus, ShoppingBag, SlidersHorizontal, AlertCircleIcon } from 'lucide-react'
 import { ProductCard } from '@/components/marketplace/ProductCard'
 import { Modal } from '@/components/ui/index'
 import { ProductSk, Empty } from '@/components/ui/index'
@@ -48,11 +48,11 @@ export default function MarketplacePage() {
   }
 
   return (
-    <div className="page-wrap py-6">
+    <div className="page-wrap pt-5 pb-6 sm:py-6">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-black">Marketplace</h1>
-          <p className="text-sm mt-0.5" style={{ color: 'rgba(255,255,255,0.35)' }}>Compre e venda entre estudantes</p>
+          <h1 className="text-2xl font-black" style={{ color: 'var(--text-primary)' }}>Marketplace</h1>
+          <p className="text-sm mt-0.5" style={{ color: 'var(--text-muted)' }}>Compre e venda entre estudantes</p>
         </div>
         {isAuthenticated && (
           <button onClick={() => setCreateOpen(true)} className="btn-green text-sm"><Plus className="w-4 h-4" />Anunciar</button>
@@ -61,11 +61,11 @@ export default function MarketplacePage() {
 
       <div className="flex flex-col sm:flex-row gap-3 mb-6">
         <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'rgba(255,255,255,0.25)' }} />
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'var(--text-muted)' }} />
           <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Buscar produtos..." className="input pl-10" />
         </div>
         <div className="flex items-center gap-2">
-          <SlidersHorizontal className="w-4 h-4 flex-shrink-0" style={{ color: 'rgba(255,255,255,0.35)' }} />
+          <SlidersHorizontal className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--text-muted)' }} />
           <select value={cat} onChange={(e) => setCat(e.target.value)} className="input w-auto">
             <option value="">Todas as categorias</option>
             {CATS.map((c) => <option key={c} value={c}>{c}</option>)}
@@ -97,8 +97,8 @@ export default function MarketplacePage() {
             <div className="sm:col-span-2"><label className="label">Descrição</label><textarea {...register('description')} rows={3} className="input resize-none" /></div>
             <div className="sm:col-span-2"><label className="label">URLs das imagens (uma por linha)</label><textarea {...register('imageUrls')} rows={3} placeholder="https://..." className="input resize-none font-mono text-xs" /></div>
           </div>
-          <div className="p-3 rounded-xl text-xs" style={{ background: 'rgba(255,196,0,0.06)', border: '1px solid rgba(255,196,0,0.15)', color: 'rgba(255,196,0,0.8)' }}>
-            ⚠️ Adicione um WhatsApp no seu perfil para que compradores entrem em contato.
+          <div className="p-3 rounded-xl text-xs flex items-center gap-2" style={{ background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.2)', color: '#f59e0b' }}>
+            <AlertCircleIcon className="w-4 h-4" /> Adicione um WhatsApp no seu perfil para que compradores entrem em contato.
           </div>
           <div className="flex justify-end gap-3">
             <button type="button" onClick={() => { reset(); setCreateOpen(false) }} className="btn-outline">Cancelar</button>

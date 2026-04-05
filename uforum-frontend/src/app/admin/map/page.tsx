@@ -12,7 +12,6 @@ import { useAuthStore } from '@/store/auth'
 import { mapApi } from '@/lib/api'
 import type { MapBlock } from '@/types'
 
-// Leaflet loaded dynamically — no SSR
 const LeafletMap = dynamic(() => import('@/components/map/LeafletMap'), {
   ssr: false,
   loading: () => (
@@ -37,13 +36,11 @@ export default function AdminMapPage() {
   const qc = useQueryClient()
   const [selectedBlock, setSelectedBlock] = useState<MapBlock | null>(null)
 
-  // State for the modal
   const [modalMode, setModalMode] = useState<ModalMode>(null)
   const [currentCoord, setCurrentCoord] = useState<{ lat: number, lng: number } | null>(null)
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm<BlockForm>()
 
-  // Auth Protection
   useEffect(() => {
     if (typeof window !== 'undefined' && !isAuthenticated) return;
     if (user && user.role !== 'ADMIN') {
@@ -57,7 +54,6 @@ export default function AdminMapPage() {
     queryFn: () => mapApi.listBlocks().then((r) => r.data),
   })
 
-  // MUTATIONS (Criar, Editar, Excluir)
   const { mutate: mutateCreate, isPending: isCreating } = useMutation({
     mutationFn: (d: any) => mapApi.createBlock(d),
     onSuccess: () => {
@@ -111,7 +107,6 @@ export default function AdminMapPage() {
     }
   }
 
-  // Se o role não for admin, nem desenha a UI (proteção visual após o redirect)
   if (!user || user.role !== 'ADMIN') {
     return <div className="min-h-screen bg-zinc-950" />
   }
@@ -120,7 +115,6 @@ export default function AdminMapPage() {
 
   return (
     <div className="flex flex-col h-[100dvh] w-full bg-zinc-950">
-      {/* Header */}
       <header className="flex-shrink-0 h-16 border-b border-zinc-800/50 flex items-center px-4 md:px-6 justify-between bg-zinc-950/80 backdrop-blur-md z-10 sticky top-0">
         <div className="flex items-center gap-4">
           <Link href="/feed" className="p-2 hover:bg-zinc-800 rounded-full transition-colors">
@@ -136,7 +130,6 @@ export default function AdminMapPage() {
         </div>
       </header>
 
-      {/* Map Area */}
       <div className="flex-1 relative cursor-crosshair">
         <LeafletMap
           blocks={mapBlocks as MapBlock[]}
@@ -157,7 +150,6 @@ export default function AdminMapPage() {
         />
       </div>
 
-      {/* Admin Insertion/Edit Modal */}
       {modalMode && currentCoord && (
         <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
           <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 w-full max-w-md shadow-2xl relative">

@@ -37,11 +37,11 @@ export default function CommunitiesPage() {
   }
 
   return (
-    <div className="page-wrap py-6">
+    <div className="page-wrap pt-5 pb-6 sm:py-6">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-black">Comunidades</h1>
-          <p className="text-sm mt-0.5" style={{ color: 'rgba(255,255,255,0.35)' }}>Encontre sua turma</p>
+          <h1 className="text-2xl font-black" style={{ color: 'var(--text-primary)' }}>Comunidades</h1>
+          <p className="text-sm mt-0.5" style={{ color: 'var(--text-muted)' }}>Encontre sua turma</p>
         </div>
         {isAuthenticated && (
           <button onClick={() => setCreateOpen(true)} className="btn-green text-sm">
@@ -51,7 +51,7 @@ export default function CommunitiesPage() {
       </div>
 
       <div className="relative max-w-md mb-6">
-        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'rgba(255,255,255,0.25)' }} />
+        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'var(--text-muted)' }} />
         <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Buscar comunidades..." className="input pl-10" />
       </div>
 
@@ -75,16 +75,16 @@ export default function CommunitiesPage() {
           <div>
             <label className="label">Nome</label>
             <input {...register('name')} placeholder="Nome da comunidade" className="input" />
-            {errors.name && <p className="text-xs mt-1" style={{ color: '#ff6b6b' }}>{errors.name.message}</p>}
+            {errors.name && <p className="text-xs mt-1" style={{ color: '#ef4444' }}>{errors.name.message}</p>}
           </div>
           <div>
             <label className="label">Descrição</label>
             <textarea {...register('description')} rows={3} placeholder="Sobre o que é?" className="input resize-none" />
-            {errors.description && <p className="text-xs mt-1" style={{ color: '#ff6b6b' }}>{errors.description.message}</p>}
+            {errors.description && <p className="text-xs mt-1" style={{ color: '#ef4444' }}>{errors.description.message}</p>}
           </div>
           <label className="flex items-center gap-2 cursor-pointer">
             <input {...register('isPrivate')} type="checkbox" className="rounded" />
-            <span className="text-sm" style={{ color: 'rgba(255,255,255,0.6)' }}>Privada</span>
+            <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>Privada</span>
           </label>
           <div className="flex justify-end gap-3 pt-2">
             <button type="button" onClick={() => { reset(); setCreateOpen(false) }} className="btn-outline">Cancelar</button>

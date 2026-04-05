@@ -33,22 +33,22 @@ export function CommunityCard({ community: init, onUpdate }: { community: Commun
 
   return (
     <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
-      className="card p-4 hover:bg-[#1a1a1a] hover:border-[rgba(255,255,255,0.12)] transition-all duration-200">
+      className="card p-4 hover:bg-[var(--bg-tertiary)] hover:border-[var(--emerald-500)]/30 transition-all duration-200">
       <div className="flex items-center gap-3">
         <Link href={`/communities/${c.slug}`} className="flex-shrink-0">
           {c.iconUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
             <img src={c.iconUrl} alt={c.name} className="w-11 h-11 rounded-xl object-cover" />
           ) : (
             <div className="w-11 h-11 rounded-xl flex items-center justify-center font-bold text-base"
-              style={{ background: 'rgba(0,196,79,0.1)', border: '1px solid rgba(0,196,79,0.2)', color: '#00c44f' }}>
+              style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-primary)', color: 'var(--emerald-500)' }}>
               {c.name[0].toUpperCase()}
             </div>
           )}
         </Link>
         <div className="flex-1 min-w-0">
           <Link href={`/communities/${c.slug}`}
-            className="font-semibold text-sm hover:text-[#00c44f] transition-colors flex items-center gap-1.5 truncate">
+            className="font-semibold text-sm hover:text-[var(--emerald-500)] transition-colors flex items-center gap-1.5 truncate"
+            style={{ color: 'var(--text-primary)' }}>
             {c.name} {c.isPrivate && <Lock className="w-3 h-3 flex-shrink-0" style={{ color: 'var(--text-muted)' }} />}
           </Link>
           <p className="text-xs flex items-center gap-1 mt-0.5" style={{ color: 'var(--text-muted)' }}>

@@ -103,26 +103,23 @@ export default function CommunityPage({ params }: { params: Promise<{ slug: stri
   }
 
   if (cLoading) return (
-    <div className="page-wrap py-6">
+    <div className="page-wrap pt-0 pb-6 sm:py-6">
       <div className="h-40 skeleton rounded-2xl mb-6" />
       <div className="space-y-3">{[...Array(3)].map((_, i) => <PostSk key={i} />)}</div>
     </div>
   )
-  if (!community) return <div className="page-wrap py-12 text-center" style={{ color: 'rgba(255,255,255,0.4)' }}>Comunidade não encontrada</div>
+  if (!community) return <div className="page-wrap py-12 text-center" style={{ color: 'var(--text-muted)' }}>Comunidade não encontrada</div>
 
   return (
     <div>
-      {/* Banner */}
       <div className="relative h-40 sm:h-52 overflow-hidden">
         {community.bannerUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
           <img src={community.bannerUrl} alt={community.name} className="w-full h-full object-cover" />
         ) : (
-          <div className="w-full h-full" style={{ background: 'linear-gradient(135deg, rgba(0,196,79,0.15) 0%, rgba(0,196,79,0.04) 100%)', borderBottom: '1px solid rgba(0,196,79,0.1)' }} />
+          <div className="w-full h-full" style={{ background: 'var(--bg-secondary)', borderBottom: '1px solid var(--border-primary)' }} />
         )}
-        <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, #0d0d0d 0%, transparent 60%)' }} />
+        <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, var(--bg-primary) 0%, transparent 60%)' }} />
 
-        {/* Manage buttons — visible only to creator/admin */}
         {canManage && (
           <div className="absolute top-3 right-3 flex gap-2">
             <button onClick={() => setEditOpen(true)}
@@ -142,21 +139,20 @@ export default function CommunityPage({ params }: { params: Promise<{ slug: stri
       <div className="page-wrap">
         <div className="relative -mt-14 mb-6 flex items-end justify-between gap-4">
           <div className="flex items-end gap-4">
-            <div className="w-20 h-20 rounded-2xl overflow-hidden flex-shrink-0 border-4" style={{ borderColor: '#0d0d0d', boxShadow: '0 0 0 1px rgba(0,196,79,0.2)' }}>
+            <div className="w-20 h-20 rounded-2xl overflow-hidden flex-shrink-0 border-4" style={{ borderColor: 'var(--bg-primary)', boxShadow: '0 0 0 1px var(--emerald-500)/20' }}>
               {community.iconUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
                 <img src={community.iconUrl} alt={community.name} className="w-full h-full object-cover" />
               ) : (
-                <div className="w-full h-full flex items-center justify-center font-black text-2xl" style={{ background: 'rgba(0,196,79,0.1)', color: '#00c44f' }}>
+                <div className="w-full h-full flex items-center justify-center font-black text-2xl" style={{ background: 'var(--bg-secondary)', color: 'var(--emerald-500)' }}>
                   {community.name[0]}
                 </div>
               )}
             </div>
             <div className="pb-2">
-              <h1 className="text-2xl font-black flex items-center gap-2">
-                {community.name} {community.isPrivate && <Lock className="w-4 h-4" style={{ color: 'rgba(255,255,255,0.3)' }} />}
+              <h1 className="text-2xl font-black flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+                {community.name} {community.isPrivate && <Lock className="w-4 h-4" style={{ color: 'var(--text-muted)' }} />}
               </h1>
-              <div className="flex items-center gap-3 text-sm" style={{ color: 'rgba(255,255,255,0.4)' }}>
+              <div className="flex items-center gap-3 text-sm" style={{ color: 'var(--text-muted)' }}>
                 <span className="flex items-center gap-1"><Users className="w-3.5 h-3.5" />{fmtNum(community.memberCount)} membros</span>
                 <span>· criada {timeAgo(community.createdAt)}</span>
               </div>
@@ -176,23 +172,23 @@ export default function CommunityPage({ params }: { params: Promise<{ slug: stri
           )}
         </div>
 
-        <p className="mb-6 max-w-2xl" style={{ color: 'rgba(255,255,255,0.5)' }}>{community.description}</p>
+        <p className="mb-6 max-w-2xl text-sm" style={{ color: 'var(--text-secondary)' }}>{community.description}</p>
 
         <div className="flex gap-6">
           <div className="flex-1 min-w-0 space-y-3">
             {isAuthenticated && community.isMember && (
-              <button onClick={() => setCreateOpen(true)} className="card w-full p-4 flex items-center gap-3 hover:bg-[#1a1a1a] transition-all text-left">
-                <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: 'rgba(0,196,79,0.1)', color: '#00c44f' }}>
+              <button onClick={() => setCreateOpen(true)} className="card w-full p-4 flex items-center gap-3 hover:bg-[var(--bg-secondary)] transition-all text-left">
+                <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: 'var(--emerald-500)', color: '#fff' }}>
                   <Plus className="w-4 h-4" />
                 </div>
-                <span className="text-sm" style={{ color: 'rgba(255,255,255,0.3)' }}>Criar post em {community.name}...</span>
+                <span className="text-sm" style={{ color: 'var(--text-muted)' }}>Criar post em {community.name}...</span>
               </button>
             )}
 
             {isLoading ? (
               <div className="space-y-3">{[...Array(3)].map((_, i) => <PostSk key={i} />)}</div>
             ) : posts.length === 0 ? (
-              <div className="card p-10 text-center" style={{ color: 'rgba(255,255,255,0.3)' }}>Nenhum post ainda. Seja o primeiro!</div>
+              <div className="card p-10 text-center" style={{ color: 'var(--text-muted)' }}>Nenhum post ainda. Seja o primeiro!</div>
             ) : (
               <>
                 {posts.map((p) => <PostCard key={p.id} post={p} showCommunity={false} onDelete={() => refetch()} />)}
@@ -207,16 +203,16 @@ export default function CommunityPage({ params }: { params: Promise<{ slug: stri
 
           <aside className="hidden lg:block w-64 flex-shrink-0">
             <div className="card p-4 sticky top-20 space-y-3">
-              <h3 className="font-bold text-sm">Sobre</h3>
-              <p className="text-xs leading-relaxed" style={{ color: 'rgba(255,255,255,0.4)' }}>{community.description}</p>
-              <div className="text-xs space-y-1" style={{ color: 'rgba(255,255,255,0.3)' }}>
+              <h3 className="font-bold text-sm" style={{ color: 'var(--text-primary)' }}>Sobre</h3>
+              <p className="text-xs leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{community.description}</p>
+              <div className="text-xs space-y-1" style={{ color: 'var(--text-muted)' }}>
                 <div>{fmtNum(community.memberCount)} membros</div>
-                <div>Criada por <span className="text-[#00c44f]">@{community.createdBy.username}</span></div>
+                <div>Criada por <span className="font-bold" style={{ color: 'var(--emerald-500)' }}>@{community.createdBy.username}</span></div>
               </div>
               {canManage && (
                 <button onClick={() => setEditOpen(true)}
-                  className="w-full flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-semibold transition-all hover:bg-[#2a2a2a]"
-                  style={{ border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.5)' }}>
+                  className="w-full flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-semibold transition-all hover:bg-[var(--bg-secondary)]"
+                  style={{ border: '1px solid var(--border-primary)', color: 'var(--text-secondary)' }}>
                   <Settings className="w-3.5 h-3.5" />Gerenciar comunidade
                 </button>
               )}
@@ -227,7 +223,6 @@ export default function CommunityPage({ params }: { params: Promise<{ slug: stri
 
       <CreatePostModal open={createOpen} onClose={() => setCreateOpen(false)} communityId={community.id} onSuccess={refetch} />
 
-      {/* Edit community modal */}
       <Modal open={editOpen} onClose={() => { reset(); setEditOpen(false) }} title="Editar Comunidade" size="md">
         <form onSubmit={handleSubmit(handleEdit)} className="space-y-4">
           <div>
@@ -239,13 +234,13 @@ export default function CommunityPage({ params }: { params: Promise<{ slug: stri
             <label className="label">URL do Banner</label>
             <input {...register('bannerUrl')} placeholder="https://..." className="input"
               defaultValue={community.bannerUrl ?? ''} />
-            <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.3)' }}>Imagem horizontal recomendada (1200×300px)</p>
+            <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>Imagem horizontal recomendada (1200×300px)</p>
           </div>
           <div>
             <label className="label">URL do Ícone</label>
             <input {...register('iconUrl')} placeholder="https://..." className="input"
               defaultValue={community.iconUrl ?? ''} />
-            <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.3)' }}>Imagem quadrada recomendada (400×400px)</p>
+            <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>Imagem quadrada recomendada (400×400px)</p>
           </div>
           <div className="flex justify-end gap-3 pt-2">
             <button type="button" onClick={() => { reset(); setEditOpen(false) }} className="btn-outline">Cancelar</button>

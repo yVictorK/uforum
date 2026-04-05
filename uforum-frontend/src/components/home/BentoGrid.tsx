@@ -57,13 +57,13 @@ export function BentoGrid() {
             className={`card group !p-10 flex flex-col justify-between min-h-[300px] cursor-pointer hover:border-zinc-700/50 ${card.colSpan}`}
           >
             <div className="absolute top-8 right-8 text-zinc-700 group-hover:text-emerald-400 transform translate-x-2 -translate-y-2 opacity-0 group-hover:opacity-100 group-hover:translate-x-0 group-hover:translate-y-0 transition-all duration-300">
-               <ArrowUpRight className="w-6 h-6" />
+              <ArrowUpRight className="w-6 h-6" />
             </div>
 
             <div className="w-16 h-16 rounded-2xl bg-zinc-800/50 border border-zinc-700 flex items-center justify-center mb-12 shadow-[inset_0_2px_4px_rgba(255,255,255,0.05),_0_8px_16px_rgba(0,0,0,0.4)] group-hover:bg-zinc-800 transition-colors duration-300">
-               {card.icon}
+              {card.icon}
             </div>
-            
+
             <div>
               <h3 className="text-2xl font-bold tracking-tight text-zinc-100 mb-2">{card.title}</h3>
               <p className="text-zinc-500 leading-relaxed font-medium">{card.desc}</p>

@@ -19,14 +19,14 @@ const COURSES = [
 ]
 
 const schema = z.object({
-  fullName:        z.string().min(3, 'Mínimo 3 caracteres').max(100),
-  username:        z.string().min(3).max(50).regex(/^[a-zA-Z0-9_]+$/, 'Apenas letras, números e _'),
-  email:           z.string().email('Email inválido').regex(/.*@([a-z0-9]+\.)*ufam\.edu\.br$/, 'Somente e-mails da UFAM'),
-  studentId:       z.string().min(6, 'Mínimo 6 caracteres').max(20),
-  password:        z.string().min(8, 'Mínimo 8 caracteres').regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%*])[a-zA-Z0-9!@#$%*]{8,}$/, 'Senha deve conter: 1 maiúscula, 1 minúscula, 1 número e 1 especial (!@#$%*)'),
+  fullName: z.string().min(3, 'Mínimo 3 caracteres').max(100),
+  username: z.string().min(3).max(50).regex(/^[a-zA-Z0-9_]+$/, 'Apenas letras, números e _'),
+  email: z.string().email('Email inválido').regex(/.*@([a-z0-9]+\.)*ufam\.edu\.br$/, 'Somente e-mails da UFAM'),
+  studentId: z.string().min(6, 'Mínimo 6 caracteres').max(20),
+  password: z.string().min(8, 'Mínimo 8 caracteres').regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%*])[a-zA-Z0-9!@#$%*]{8,}$/, 'Senha deve conter: 1 maiúscula, 1 minúscula, 1 número e 1 especial (!@#$%*)'),
   confirmPassword: z.string(),
-  course:          z.string().optional(),
-  semester:        z.string().optional(),
+  course: z.string().optional(),
+  semester: z.string().optional(),
 }).refine((d) => d.password === d.confirmPassword, {
   message: 'Senhas não conferem',
   path: ['confirmPassword'],
@@ -46,7 +46,6 @@ export default function RegisterPage() {
     try {
       const { confirmPassword: _, semester, course, ...rest } = d
 
-      // Monta payload sem campos vazios, convertendo semester para numero
       const payload: Record<string, unknown> = { ...rest }
       if (course && course.trim() !== '') payload.course = course
       if (semester && semester.trim() !== '') {
@@ -141,8 +140,8 @@ export default function RegisterPage() {
                 <div className="relative">
                   <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'rgba(255,255,255,0.25)' }} />
                   <input {...register('password')} type={showPassword ? 'text' : 'password'} placeholder="Mín. 8 caracteres" className="input px-10" />
-                  <button 
-                    type="button" 
+                  <button
+                    type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-zinc-500 hover:text-white transition-colors"
                   >

@@ -91,7 +91,6 @@ export default function ProfilePage({ params }: { params: Promise<{ username: st
 
       await usersApi.updateProfile(payload)
       await qc.invalidateQueries({ queryKey: ['profile', username] })
-      // Update auth store if own profile
       if (isOwn && d.profilePictureUrl) updateUser({ profilePictureUrl: d.profilePictureUrl })
       toast.success('Perfil atualizado!')
       setEditOpen(false)
@@ -102,17 +101,15 @@ export default function ProfilePage({ params }: { params: Promise<{ username: st
   const prods = prodsData?.pages.flatMap((p) => p.content) ?? []
   const events = eventsData?.pages.flatMap((p) => p.content) ?? []
 
-  // BUG-03: Initialize isFollowing from backend profile data
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { if (profile) setIsFollowing(profile.isFollowing) }, [profile?.isFollowing])
 
   if (isLoading) return (
-    <div className="page-wrap py-6 max-w-3xl space-y-4">
+    <div className="page-wrap pt-5 pb-6 sm:py-6 max-w-3xl space-y-4">
       <div className="h-32 skeleton rounded-2xl" />
       <div className="flex gap-4"><Sk className="w-20 h-20 rounded-full" /><div className="flex-1 space-y-2 pt-2"><Sk className="h-6 w-40" /><Sk className="h-4 w-24" /></div></div>
     </div>
   )
-  if (!profile) return <div className="page-wrap py-12 text-center" style={{ color: 'rgba(255,255,255,0.35)' }}>Usuário não encontrado</div>
+  if (!profile) return <div className="page-wrap py-12 text-center" style={{ color: 'var(--text-muted)' }}>Usuário não encontrado</div>
 
   const tabs = [
     { key: 'posts' as Tab, label: 'Posts', icon: FileText, count: profile.postsCount },
@@ -121,15 +118,13 @@ export default function ProfilePage({ params }: { params: Promise<{ username: st
   ]
 
   return (
-    <div className="page-wrap py-6 max-w-3xl">
+    <div className="page-wrap pt-5 pb-6 sm:py-6 max-w-3xl">
       <div className="card overflow-hidden mb-6">
-        {/* Banner */}
         <div className="relative h-32 group">
           {profile.bannerUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
             <img src={profile.bannerUrl} alt="Banner" className="w-full h-full object-cover" />
           ) : (
-            <div className="w-full h-full" style={{ background: 'linear-gradient(135deg, rgba(0,196,79,0.15) 0%, rgba(0,196,79,0.04) 100%)' }} />
+            <div className="w-full h-full" style={{ background: 'var(--bg-secondary)' }} />
           )}
           {isOwn && (
             <button onClick={() => setEditOpen(true)}
@@ -144,7 +139,6 @@ export default function ProfilePage({ params }: { params: Promise<{ username: st
 
         <div className="px-5 pb-5">
           <div className="flex items-end justify-between -mt-10 mb-4">
-            {/* Avatar with edit overlay */}
             <div className="relative group/avatar">
               <Avatar src={profile.profilePictureUrl} name={profile.fullName} size="xl" ring />
               {isOwn && (
@@ -171,13 +165,13 @@ export default function ProfilePage({ params }: { params: Promise<{ username: st
             </div>
           </div>
 
-          <h1 className="text-xl font-black">{profile.fullName}</h1>
-          <p className="text-sm mb-2" style={{ color: 'rgba(255,255,255,0.4)' }}>@{profile.username}</p>
+          <h1 className="text-xl font-black" style={{ color: 'var(--text-primary)' }}>{profile.fullName}</h1>
+          <p className="text-sm mb-2" style={{ color: 'var(--text-muted)' }}>@{profile.username}</p>
           <span className="badge-green text-xs">{roleLabel(profile.role)}</span>
 
-          {profile.bio && <p className="text-sm mt-3 leading-relaxed" style={{ color: 'rgba(255,255,255,0.6)' }}>{profile.bio}</p>}
+          {profile.bio && <p className="text-sm mt-3 leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{profile.bio}</p>}
 
-          <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs mt-3" style={{ color: 'rgba(255,255,255,0.4)' }}>
+          <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs mt-3" style={{ color: 'var(--text-muted)' }}>
             {profile.course && <span className="flex items-center gap-1"><BookOpen className="w-3.5 h-3.5" />{profile.course}{profile.semester ? ` · ${profile.semester}º período` : ''}</span>}
             {profile.neighborhood && <span className="flex items-center gap-1"><MapPin className="w-3.5 h-3.5" />{profile.neighborhood}</span>}
             <span className="flex items-center gap-1"><Calendar className="w-3.5 h-3.5" />desde {fmtDate(profile.createdAt)}</span>
@@ -185,13 +179,13 @@ export default function ProfilePage({ params }: { params: Promise<{ username: st
 
           <div className="flex gap-5 mt-4">
             {[{ v: fmtNum(profile.postsCount), l: 'posts' }, { v: fmtNum(profile.followersCount), l: 'seguidores' }, { v: fmtNum(profile.followingCount), l: 'seguindo' }].map(({ v, l }) => (
-              <div key={l}><span className="font-bold">{v}</span> <span className="text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>{l}</span></div>
+              <div key={l}><span className="font-bold" style={{ color: 'var(--text-primary)' }}>{v}</span> <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{l}</span></div>
             ))}
           </div>
 
           {profile.currentSubjects.length > 0 && (
             <div className="mt-4">
-              <p className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: 'rgba(255,255,255,0.25)' }}>Matérias</p>
+              <p className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--text-muted)' }}>Matérias</p>
               <div className="flex flex-wrap gap-1.5">
                 {profile.currentSubjects.map((s: string) => <span key={s} className="badge-zinc text-xs">{s}</span>)}
               </div>
@@ -200,12 +194,11 @@ export default function ProfilePage({ params }: { params: Promise<{ username: st
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="flex gap-1 p-1 rounded-xl w-fit mb-4" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
+      <div className="flex gap-1 p-1 rounded-xl w-fit mb-4" style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-primary)' }}>
         {tabs.map(({ key, label, icon: Icon, count }) => (
           <button key={key} onClick={() => setTab(key)}
             className={cn('flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all', tab === key ? 'font-bold' : '')}
-            style={tab === key ? { background: '#00c44f', color: '#000' } : { color: 'rgba(255,255,255,0.4)' }}>
+            style={tab === key ? { background: 'var(--emerald-500)', color: '#fff' } : { color: 'var(--text-muted)' }}>
             <Icon className="w-3.5 h-3.5" />{label}
             {count !== undefined && <span className="text-xs opacity-70">({fmtNum(count)})</span>}
           </button>
@@ -214,35 +207,34 @@ export default function ProfilePage({ params }: { params: Promise<{ username: st
 
       {tab === 'posts' && (
         pLoading ? <div className="space-y-3">{[...Array(2)].map((_, i) => <div key={i} className="h-32 skeleton rounded-xl" />)}</div>
-        : posts.length === 0 ? <div className="card p-8 text-center text-sm" style={{ color: 'rgba(255,255,255,0.25)' }}>Nenhum post</div>
-        : <div className="space-y-3">{posts.map((p) => <PostCard key={p.id} post={p} />)}</div>
+          : posts.length === 0 ? <div className="card p-8 text-center text-sm" style={{ color: 'var(--text-muted)' }}>Nenhum post</div>
+            : <div className="space-y-3">{posts.map((p) => <PostCard key={p.id} post={p} />)}</div>
       )}
 
       {tab === 'products' && isOwn && (
         prLoading ? <div className="grid grid-cols-2 gap-4">{[...Array(4)].map((_, i) => <div key={i} className="h-48 skeleton rounded-2xl" />)}</div>
-        : prods.length === 0 ? <div className="card p-8 text-center text-sm" style={{ color: 'rgba(255,255,255,0.25)' }}>Nenhum anúncio</div>
-        : <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">{prods.map((p) => <ProductCard key={p.id} product={p} />)}</div>
+          : prods.length === 0 ? <div className="card p-8 text-center text-sm" style={{ color: 'var(--text-muted)' }}>Nenhum anúncio</div>
+            : <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">{prods.map((p) => <ProductCard key={p.id} product={p} />)}</div>
       )}
 
       {tab === 'events' && (
         isOwn ? (
           eLoading ? <div className="space-y-3">{[...Array(2)].map((_, i) => <div key={i} className="h-32 skeleton rounded-xl" />)}</div>
-          : events.length === 0 ? <div className="card p-8 text-center text-sm" style={{ color: 'rgba(255,255,255,0.25)' }}>Nenhum evento confirmado</div>
-          : <div className="space-y-3">{events.map((e) => (
-              <div key={e.id} className="card p-4 flex items-center gap-3">
-                <CalendarDays className="w-5 h-5 flex-shrink-0" style={{ color: '#00c44f' }} />
-                <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-sm truncate">{e.title}</p>
-                  <p className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>{e.location}</p>
+            : events.length === 0 ? <div className="card p-8 text-center text-sm" style={{ color: 'var(--text-muted)' }}>Nenhum evento confirmado</div>
+              : <div className="space-y-3">{events.map((e) => (
+                <div key={e.id} className="card p-4 flex items-center gap-3">
+                  <CalendarDays className="w-5 h-5 flex-shrink-0" style={{ color: 'var(--emerald-500)' }} />
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-sm truncate" style={{ color: 'var(--text-primary)' }}>{e.title}</p>
+                    <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{e.location}</p>
+                  </div>
                 </div>
-              </div>
-            ))}</div>
+              ))}</div>
         ) : (
-          <div className="card p-8 text-center text-sm" style={{ color: 'rgba(255,255,255,0.25)' }}>Eventos confirmados aparecerão aqui</div>
+          <div className="card p-8 text-center text-sm" style={{ color: 'var(--text-muted)' }}>Eventos confirmados aparecerão aqui</div>
         )
       )}
 
-      {/* Edit Profile Modal */}
       <Modal open={editOpen} onClose={() => setEditOpen(false)} title="Editar Perfil" size="lg">
         <form onSubmit={handleSubmit(onEdit)} className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -255,16 +247,15 @@ export default function ProfilePage({ params }: { params: Promise<{ username: st
               <textarea {...register('bio')} rows={3} className="input resize-none" defaultValue={profile.bio ?? ''} />
             </div>
 
-            {/* Photo URLs */}
             <div className="sm:col-span-2">
               <label className="label flex items-center gap-1.5"><Camera className="w-3.5 h-3.5" />URL da foto de perfil</label>
               <input {...register('profilePictureUrl')} placeholder="https://..." className="input" defaultValue={profile.profilePictureUrl ?? ''} />
-              <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.3)' }}>Cole o link de uma imagem (ex: do Imgur, Google Photos)</p>
+              <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>Cole o link de uma imagem (ex: do Imgur, Google Photos)</p>
             </div>
             <div className="sm:col-span-2">
               <label className="label flex items-center gap-1.5"><Camera className="w-3.5 h-3.5" />URL do banner</label>
               <input {...register('bannerUrl')} placeholder="https://..." className="input" defaultValue={profile.bannerUrl ?? ''} />
-              <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.3)' }}>Imagem horizontal recomendada (1200×300px)</p>
+              <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>Imagem horizontal recomendada (1200×300px)</p>
             </div>
 
             <div>

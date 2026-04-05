@@ -34,7 +34,6 @@ export function CreatePostModal({ open, onClose, communityId, parentId, onSucces
     defaultValues: { communityId }
   })
 
-  // FIX: only show communities the user is a MEMBER of
   const { data: myCommsData } = useQuery({
     queryKey: ['my-communities'],
     queryFn: () => communitiesApi.getMyCommunities(0).then((r) => r.data),
@@ -79,7 +78,7 @@ export function CreatePostModal({ open, onClose, communityId, parentId, onSucces
               <Users className="w-3.5 h-3.5" />Comunidade
             </label>
             {myCommunities.length === 0 ? (
-              <div className="input text-sm" style={{ color: 'rgba(255,255,255,0.3)' }}>
+              <div className="input text-sm italic" style={{ color: 'var(--text-muted)' }}>
                 Entre em uma comunidade para poder postar nela
               </div>
             ) : (
@@ -101,12 +100,12 @@ export function CreatePostModal({ open, onClose, communityId, parentId, onSucces
         )}
 
         {/* Tab bar */}
-        <div className="flex gap-1 p-1 rounded-xl" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
+        <div className="flex gap-1 p-1 rounded-xl" style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-primary)' }}>
           {[['text', 'Texto'], ['image', 'Imagem']].map(([k, l]) => (
             <button key={k} type="button" onClick={() => setTab(k as 'text' | 'image')}
               className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-sm font-medium transition-all"
               style={tab === k
-                ? { background: '#00c44f', color: '#000' }
+                ? { background: 'var(--emerald-500)', color: '#fff' }
                 : { color: 'var(--text-muted)' }}>
               {k === 'image' && <ImageIcon className="w-3.5 h-3.5" />}{l}
             </button>
@@ -117,7 +116,7 @@ export function CreatePostModal({ open, onClose, communityId, parentId, onSucces
           <textarea {...register('content')} placeholder={parentId ? 'Escreva sua resposta...' : 'O que você está pensando?'}
             rows={5} className="input resize-none" />
           <div className="flex justify-between mt-1">
-            {errors.content && <p className="text-xs" style={{ color: '#ff6b6b' }}>{errors.content.message}</p>}
+            {errors.content && <p className="text-xs text-[#ef4444] font-medium">{errors.content.message}</p>}
             <span className="text-xs ml-auto" style={{ color: 'var(--text-muted)' }}>{contentLen}/10000</span>
           </div>
         </div>
@@ -126,7 +125,7 @@ export function CreatePostModal({ open, onClose, communityId, parentId, onSucces
           <div>
             <label className="label flex items-center gap-1.5"><Link2 className="w-3.5 h-3.5" />URL da imagem</label>
             <input {...register('imageUrl')} placeholder="https://..." className="input" />
-            {errors.imageUrl && <p className="text-xs mt-1" style={{ color: '#ff6b6b' }}>{errors.imageUrl.message}</p>}
+            {errors.imageUrl && <p className="text-xs mt-1" style={{ color: '#ef4444' }}>{errors.imageUrl.message}</p>}
           </div>
         )}
 
