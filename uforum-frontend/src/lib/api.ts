@@ -133,6 +133,9 @@ export const mapApi = {
 
 export const reportsApi = {
   create: (d: unknown) => api.post('/reports', d),
+  getPending: (p = 0) => api.get(`/reports/pending?page=${p}&size=20`),
+  resolve: (id: string, status: string, notes?: string) => 
+    api.post(`/reports/${id}/resolve?status=${status}${notes ? `&notes=${encodeURIComponent(notes)}` : ''}`),
 }
 
 export const adminApi = {

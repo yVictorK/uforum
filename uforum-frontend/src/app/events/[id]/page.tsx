@@ -9,6 +9,7 @@ import { useAuthStore } from '@/store/auth'
 import { fmtDate, fmtNum } from '@/lib/utils'
 import { Avatar } from '@/components/ui/Avatar'
 import { Sk } from '@/components/ui/index'
+import { ConfirmModal } from '@/components/ui/ConfirmModal'
 import toast from 'react-hot-toast'
 import { CreateEventModal } from '@/components/event/CreateEventModal'
 import { AnimatePresence, motion } from 'framer-motion'
@@ -20,6 +21,7 @@ export default function EventPage({ params }: { params: Promise<{ id: string }> 
   const [busy, setBusy] = useState(false)
   const [showAdminMenu, setShowAdminMenu] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
+  const [isDelOpen, setIsDelOpen] = useState(false)
 
   const { data: event, isLoading, refetch } = useQuery({
     queryKey: ['event', id],
@@ -86,7 +88,7 @@ export default function EventPage({ params }: { params: Promise<{ id: string }> 
                       style={{ color: 'var(--text-secondary)' }}>
                       <Edit3 className="w-4 h-4" /> Editar Evento
                     </button>
-                    <button onClick={() => { if (window.confirm('Tem certeza?')) deleteEvent() }}
+                    <button onClick={() => { setShowAdminMenu(false); setIsDelOpen(true) }}
                       className="w-full text-left flex items-center gap-2 px-4 py-2 hover:bg-[#ef4444]/10 text-[#ef4444] text-sm transition-colors">
                       <Trash2 className="w-4 h-4" /> Excluir Evento
                     </button>
@@ -160,6 +162,17 @@ export default function EventPage({ params }: { params: Promise<{ id: string }> 
           onClose={() => setShowEditModal(false)}
           onSuccess={() => refetch()}
           initialData={event}
+        />
+      )}
+
+      {event && (
+        <ConfirmModal
+          isOpen={isDelOpen}
+          onClose={() => setIsDelOpen(false)}
+          onConfirm={() => deleteEvent()}
+          title="Excluir Evento"
+          description={`Tem certeza que deseja excluir "${event.title}"? Esta ação não pode ser desfeita.`}
+          confirmText="Sim, Excluir"
         />
       )}
     </div>

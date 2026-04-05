@@ -115,6 +115,22 @@
     transform: scale(0.95);
   }
 
+  .btn-red {
+    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full font-semibold text-sm transition-all duration-200 select-none cursor-pointer outline-none border-none disabled:opacity-40 disabled:cursor-not-allowed;
+    background: var(--red-500);
+    color: #ffffff;
+  }
+
+  .btn-red:hover:not(:disabled) {
+    background: #dc2626;
+    transform: scale(0.98);
+  }
+
+  .btn-red:active:not(:disabled) {
+    background: #b91c1c;
+    transform: scale(0.95);
+  }
+
   .btn-outline {
     @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full font-semibold text-sm transition-all duration-200 select-none cursor-pointer outline-none;
     border: 1px solid var(--border-primary);

@@ -12,6 +12,8 @@ import { useAuthStore } from '@/store/auth'
 import { adminApi } from '@/lib/api'
 import { Avatar } from '@/components/ui/Avatar'
 import { Sk } from '@/components/ui/index'
+import { ConfirmModal } from '@/components/ui/ConfirmModal'
+import { AdminNav } from '@/components/admin/AdminNav'
 
 export default function AdminUsersPage() {
   const router = useRouter()
@@ -19,6 +21,8 @@ export default function AdminUsersPage() {
   const qc = useQueryClient()
   const [page, setPage] = useState(0)
   const [search, setSearch] = useState('')
+  const [isBanOpen, setIsBanOpen] = useState(false)
+  const [targetUser, setTargetUser] = useState<any>(null)
 
   useEffect(() => {
     if (typeof window !== 'undefined' && !isAuthenticated) return
@@ -56,6 +60,8 @@ export default function AdminUsersPage() {
     onSuccess: () => {
       toast.success('Status do usuário atualizado!')
       qc.invalidateQueries({ queryKey: ['admin-users'] })
+      setIsBanOpen(false)
+      setTargetUser(null)
     },
     onError: (err: any) => {
       toast.error(err.response?.data?.message || 'Erro ao alterar status.')
@@ -82,13 +88,7 @@ export default function AdminUsersPage() {
 
   return (
     <div className="page-wrap py-6 max-w-5xl">
-      <div className="mb-8">
-        <h1 className="text-3xl font-black flex items-center gap-2">
-          <Shield className="w-8 h-8 text-emerald-500" />
-          Painel de Administração
-        </h1>
-        <p className="text-sm mt-1 text-zinc-400">Gerenciamento de usuários e moderação avançada.</p>
-      </div>
+      <AdminNav />
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
         {[
@@ -187,7 +187,7 @@ export default function AdminUsersPage() {
                         </select>
 
                         <button
-                          onClick={() => { if (window.confirm(`Deseja ${u.isActive ? 'banir' : 'desbanir'} este usuário?`)) toggleStatus(u.id) }}
+                          onClick={() => { setTargetUser(u); setIsBanOpen(true) }}
                           disabled={u.role === 'ADMIN' && user.role === 'MODERATOR'}
                           title={u.isActive ? 'Banir Usuário' : 'Desbanir Usuário'}
                           className={`p-1.5 rounded-lg transition-colors disabled:opacity-30 disabled:cursor-not-allowed ${u.isActive ? 'hover:bg-rose-500/20 text-rose-500' : 'hover:bg-emerald-500/20 text-emerald-500'}`}
@@ -214,6 +214,18 @@ export default function AdminUsersPage() {
           <p className="text-xs text-zinc-500">Mostrando até 20 registros por página.</p>
         </div>
       </div>
+
+      <ConfirmModal 
+        isOpen={isBanOpen}
+        onClose={() => { setIsBanOpen(false); setTargetUser(null) }}
+        onConfirm={() => toggleStatus(targetUser.id)}
+        title={targetUser?.isActive ? "Banir Usuário" : "Desbanir Usuário"}
+        description={targetUser?.isActive 
+          ? `Tem certeza que deseja banir @${targetUser.username}? O usuário perderá acesso à plataforma imediatamente.`
+          : `Deseja restaurar o acesso de @${targetUser?.username}?`
+        }
+        confirmText={targetUser?.isActive ? "Sim, Banir" : "Sim, Restaurar"}
+      />
     </div>
   )
 }

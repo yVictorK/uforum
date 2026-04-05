@@ -10,6 +10,8 @@ import Link from 'next/link'
 
 import { useAuthStore } from '@/store/auth'
 import { mapApi } from '@/lib/api'
+import { ConfirmModal } from '@/components/ui/ConfirmModal'
+import { AdminNav } from '@/components/admin/AdminNav'
 import type { MapBlock } from '@/types'
 
 const LeafletMap = dynamic(() => import('@/components/map/LeafletMap'), {
@@ -38,6 +40,7 @@ export default function AdminMapPage() {
 
   const [modalMode, setModalMode] = useState<ModalMode>(null)
   const [currentCoord, setCurrentCoord] = useState<{ lat: number, lng: number } | null>(null)
+  const [isDelOpen, setIsDelOpen] = useState(false)
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm<BlockForm>()
 
@@ -79,9 +82,13 @@ export default function AdminMapPage() {
     onSuccess: () => {
       toast.success('Localização excluída.')
       qc.invalidateQueries({ queryKey: ['map-blocks'] })
+      setIsDelOpen(false)
       closeModal()
     },
-    onError: () => toast.error('Erro ao tentar excluir.')
+    onError: () => {
+      toast.error('Erro ao tentar excluir.')
+      setIsDelOpen(false)
+    }
   })
 
   const closeModal = () => {
@@ -115,20 +122,9 @@ export default function AdminMapPage() {
 
   return (
     <div className="flex flex-col h-[100dvh] w-full bg-zinc-950">
-      <header className="flex-shrink-0 h-16 border-b border-zinc-800/50 flex items-center px-4 md:px-6 justify-between bg-zinc-950/80 backdrop-blur-md z-10 sticky top-0">
-        <div className="flex items-center gap-4">
-          <Link href="/feed" className="p-2 hover:bg-zinc-800 rounded-full transition-colors">
-            <ArrowLeft className="w-5 h-5 text-zinc-400" />
-          </Link>
-          <div>
-            <h1 className="font-bold text-white flex items-center gap-2">
-              <MapPin className="w-5 h-5 text-emerald-500" />
-              Gestão do Mapa (Admin)
-            </h1>
-            <p className="text-xs text-zinc-400">Clique no mapa para adicionar ou clique num marcador verde para editá-lo.</p>
-          </div>
-        </div>
-      </header>
+      <div className="page-wrap pt-6 w-full max-w-5xl flex-shrink-0">
+        <AdminNav />
+      </div>
 
       <div className="flex-1 relative cursor-crosshair">
         <LeafletMap
@@ -158,7 +154,7 @@ export default function AdminMapPage() {
                 {modalMode === 'CREATE' ? 'Adicionar Novo Local' : 'Editar Localização'}
               </h2>
               {modalMode === 'EDIT' && (
-                <button type="button" onClick={() => { if (window.confirm('Certeza que deseja excluir este local?')) mutateDelete() }} disabled={isLoading}
+                <button type="button" onClick={() => setIsDelOpen(true)} disabled={isLoading}
                   className="p-1.5 text-zinc-500 hover:text-red-500 hover:bg-red-500/10 rounded-md transition-colors" title="Excluir Localização">
                   <Trash2 className="w-5 h-5" />
                 </button>
@@ -222,6 +218,18 @@ export default function AdminMapPage() {
             </form>
           </div>
         </div>
+      )}
+
+      {selectedBlock && (
+        <ConfirmModal 
+          isOpen={isDelOpen}
+          onClose={() => setIsDelOpen(false)}
+          onConfirm={() => mutateDelete()}
+          loading={isDeleting}
+          title="Excluir Localização"
+          description={`Deseja excluir "${selectedBlock.name}" permanentemente do mapa?`}
+          confirmText="Sim, Excluir"
+        />
       )}
     </div>
   )

@@ -5,6 +5,7 @@ import { Users, Lock, Plus, UserCheck, Settings, Trash2, Edit3, X } from 'lucide
 import { useRouter } from 'next/navigation'
 import { PostCard } from '@/components/post/PostCard'
 import { PostSk, Modal } from '@/components/ui/index'
+import { ConfirmModal } from '@/components/ui/ConfirmModal'
 import { CreatePostModal } from '@/components/post/CreatePostModal'
 import { communitiesApi } from '@/lib/api'
 import { useAuthStore } from '@/store/auth'
@@ -29,6 +30,7 @@ export default function CommunityPage({ params }: { params: Promise<{ slug: stri
   const [createOpen, setCreateOpen] = useState(false)
   const [editOpen, setEditOpen] = useState(false)
   const [joining, setJoining] = useState(false)
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const qc = useQueryClient()
 
@@ -90,7 +92,6 @@ export default function CommunityPage({ params }: { params: Promise<{ slug: stri
   }
 
   const handleDelete = async () => {
-    if (!confirm(`Tem certeza que deseja excluir "${community?.name}"? Esta ação não pode ser desfeita.`)) return
     setDeleting(true)
     try {
       await communitiesApi.delete(slug)
@@ -99,6 +100,7 @@ export default function CommunityPage({ params }: { params: Promise<{ slug: stri
       router.push('/communities')
     } catch (err: unknown) {
       toast.error((err as { response?: { data?: { message?: string } } })?.response?.data?.message ?? 'Erro ao excluir')
+      setConfirmDeleteOpen(false)
     } finally { setDeleting(false) }
   }
 
@@ -228,10 +230,10 @@ export default function CommunityPage({ params }: { params: Promise<{ slug: stri
             <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>Imagem quadrada recomendada (400×400px)</p>
           </div>
           <div className="flex justify-between items-center pt-2">
-            <button type="button" onClick={handleDelete} disabled={deleting}
+            <button type="button" onClick={() => setConfirmDeleteOpen(true)} disabled={deleting}
               className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors hover:bg-[#ef4444]/10"
               style={{ color: '#ef4444' }}>
-              <Trash2 className="w-3.5 h-3.5" />{deleting ? 'Excluindo...' : 'Excluir comunidade'}
+              <Trash2 className="w-3.5 h-3.5" />{deleting ? 'Aguarde...' : 'Excluir comunidade'}
             </button>
             <div className="flex gap-3">
               <button type="button" onClick={() => { reset(); setEditOpen(false) }} className="btn-outline">Cancelar</button>
@@ -242,6 +244,16 @@ export default function CommunityPage({ params }: { params: Promise<{ slug: stri
           </div>
         </form>
       </Modal>
+
+      <ConfirmModal 
+        isOpen={confirmDeleteOpen}
+        onClose={() => setConfirmDeleteOpen(false)}
+        onConfirm={handleDelete}
+        loading={deleting}
+        title="Excluir Comunidade"
+        description={`Tem certeza que deseja excluir "${community.name}"? Todos os posts e membros serão removidos permanentemente.`}
+        confirmText="Sim, Excluir"
+      />
     </div>
   )
 }

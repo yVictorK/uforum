@@ -8,6 +8,7 @@ import { useAuthStore } from '@/store/auth'
 import { marketplaceApi } from '@/lib/api'
 import { useQueryClient } from '@tanstack/react-query'
 import type { Product } from '@/types'
+import { ConfirmModal } from '@/components/ui/ConfirmModal'
 import { motion } from 'framer-motion'
 import toast from 'react-hot-toast'
 
@@ -23,6 +24,8 @@ export function ProductCard({ product: p, compact = false, onDelete, onEdit }: P
   const qc = useQueryClient()
   const [mounted, setMounted] = useState(false)
   const [menu, setMenu] = useState(false)
+  const [delOpen, setDelOpen] = useState(false)
+  const [loading, setLoading] = useState(false)
 
   useEffect(() => { setMounted(true) }, [])
 
@@ -41,14 +44,15 @@ export function ProductCard({ product: p, compact = false, onDelete, onEdit }: P
   }
 
   const handleDelete = async () => {
-    if (!confirm(`Excluir o anúncio "${p.title}"?`)) return
+    setLoading(true)
     try {
       await marketplaceApi.delete(p.id)
       toast.success('Anúncio removido')
       qc.invalidateQueries({ queryKey: ['marketplace'] })
       onDelete?.()
+      setDelOpen(false)
     } catch { toast.error('Erro ao excluir') }
-    setMenu(false)
+    finally { setLoading(false) }
   }
 
   const statusColors: Record<string, string> = {
@@ -121,7 +125,7 @@ export function ProductCard({ product: p, compact = false, onDelete, onEdit }: P
                       <Edit3 className="w-3.5 h-3.5" />Editar
                     </button>
                   )}
-                  <button onClick={handleDelete}
+                  <button onClick={() => { setDelOpen(true); setMenu(false) }}
                     className="w-full flex items-center gap-2 px-3 py-1.5 text-xs hover:bg-[#ef4444]/10 transition-colors text-left" style={{ color: '#ef4444' }}>
                     <Trash2 className="w-3.5 h-3.5" />Excluir
                   </button>
@@ -158,6 +162,16 @@ export function ProductCard({ product: p, compact = false, onDelete, onEdit }: P
           </button>
         )}
       </div>
+      
+      <ConfirmModal 
+        isOpen={delOpen} 
+        onClose={() => setDelOpen(false)} 
+        onConfirm={handleDelete}
+        loading={loading}
+        title="Excluir Anúncio"
+        description={`Tem certeza que deseja excluir "${p.title}"? Esta ação não pode ser desfeita.`}
+        confirmText="Sim, Excluir"
+      />
     </motion.div>
   )
 }
