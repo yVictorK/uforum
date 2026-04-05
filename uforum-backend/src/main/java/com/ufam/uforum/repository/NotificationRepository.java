@@ -8,11 +8,13 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
 public interface NotificationRepository extends JpaRepository<Notification, UUID> {
     Page<Notification> findByRecipientIdOrderByCreatedAtDesc(UUID recipientId, Pageable pageable);
+    Optional<Notification> findByIdAndRecipientId(UUID id, UUID recipientId);
     long countByRecipientIdAndIsReadFalse(UUID recipientId);
 
     @Modifying

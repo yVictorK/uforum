@@ -57,13 +57,16 @@ export const usersApi = {
   updateProfile: (d: unknown) => api.patch('/users/me', d),
   follow: (u: string) => api.post(`/users/${u}/follow`),
   unfollow: (u: string) => api.delete(`/users/${u}/follow`),
-  getPosts: (u: string, p = 0) => api.get(`/users/${u}/posts?page=${p}&size=20`),
+  getPosts: (u: string, p = 0, includeReplies = false) => api.get(`/users/${u}/posts?page=${p}&size=20&includeReplies=${includeReplies}`),
+  getFollowers: (u: string, p = 0) => api.get(`/users/${u}/followers?page=${p}&size=50`),
+  getFollowing: (u: string, p = 0) => api.get(`/users/${u}/following?page=${p}&size=50`),
   getMyEvents: (p = 0) => api.get(`/users/me/events?page=${p}&size=20`),
   // FIX: add getSaved — backend now exposes /users/me/saved
   getSaved: (p = 0) => api.get(`/users/me/saved?page=${p}&size=20`),
   getNotifications: (p = 0) => api.get(`/users/me/notifications?page=${p}&size=30`),
   getUnreadCount: () => api.get('/users/me/notifications/unread-count'),
   markAllRead: () => api.post('/users/me/notifications/read-all'),
+  markRead: (id: string) => api.post(`/users/me/notifications/${id}/read`),
 }
 
 export const communitiesApi = {
@@ -114,6 +117,7 @@ export const marketplaceApi = {
   get: (id: string) => api.get(`/marketplace/${id}`),
   getMine: (p = 0) => api.get(`/marketplace/my?page=${p}&size=20`),
   create: (d: unknown) => api.post('/marketplace', d),
+  update: (id: string, d: unknown) => api.patch(`/marketplace/${id}`, d),
   updateStatus: (id: string, status: string) =>
     api.patch(`/marketplace/${id}/status?status=${status}`),
   delete: (id: string) => api.delete(`/marketplace/${id}`),

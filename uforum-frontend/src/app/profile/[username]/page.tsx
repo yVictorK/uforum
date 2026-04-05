@@ -28,7 +28,8 @@ const schema = z.object({
   bannerUrl: z.string().url('URL inválida').optional().or(z.literal('')),
 })
 type F = z.infer<typeof schema>
-type Tab = 'posts' | 'products' | 'events'
+type Tab = 'posts' | 'replies' | 'products' | 'events'
+type SocialType = 'followers' | 'following'
 
 export default function ProfilePage({ params }: { params: Promise<{ username: string }> }) {
   const { username } = use(params)
@@ -38,6 +39,7 @@ export default function ProfilePage({ params }: { params: Promise<{ username: st
   const [tab, setTab] = useState<Tab>('posts')
   const [editOpen, setEditOpen] = useState(false)
   const [isFollowing, setIsFollowing] = useState(false)
+  const [socialModal, setSocialModal] = useState<{ open: boolean, type: SocialType }>({ open: false, type: 'followers' })
 
   const { data: profile, isLoading } = useQuery({
     queryKey: ['profile', username],
@@ -45,11 +47,22 @@ export default function ProfilePage({ params }: { params: Promise<{ username: st
   })
 
   const { data: postsData, isLoading: pLoading } = useInfiniteQuery({
-    queryKey: ['u-posts', username],
-    queryFn: ({ pageParam = 0 }) => usersApi.getPosts(username, pageParam as number).then((r) => r.data),
+    queryKey: ['u-posts', username, tab === 'replies'],
+    queryFn: ({ pageParam = 0 }) => usersApi.getPosts(username, pageParam as number, tab === 'replies').then((r) => r.data),
     initialPageParam: 0,
     getNextPageParam: (last: Page<Post>) => last.last ? undefined : last.number + 1,
-    enabled: tab === 'posts' && !!profile,
+    enabled: (tab === 'posts' || tab === 'replies') && !!profile,
+  })
+
+  const { data: socialData, isLoading: sLoading } = useInfiniteQuery({
+    queryKey: ['u-social', username, socialModal.type],
+    queryFn: ({ pageParam = 0 }) => 
+      socialModal.type === 'followers' 
+        ? usersApi.getFollowers(username, pageParam as number).then(r => r.data)
+        : usersApi.getFollowing(username, pageParam as number).then(r => r.data),
+    initialPageParam: 0,
+    getNextPageParam: (last: Page<any>) => last.last ? undefined : last.number + 1,
+    enabled: socialModal.open && !!profile,
   })
 
   const { data: prodsData, isLoading: prLoading } = useInfiniteQuery({
@@ -100,6 +113,7 @@ export default function ProfilePage({ params }: { params: Promise<{ username: st
   const posts = postsData?.pages.flatMap((p) => p.content) ?? []
   const prods = prodsData?.pages.flatMap((p) => p.content) ?? []
   const events = eventsData?.pages.flatMap((p) => p.content) ?? []
+  const socialList = socialData?.pages.flatMap((p) => p.content) ?? []
 
   useEffect(() => { if (profile) setIsFollowing(profile.isFollowing) }, [profile?.isFollowing])
 
@@ -112,7 +126,8 @@ export default function ProfilePage({ params }: { params: Promise<{ username: st
   if (!profile) return <div className="page-wrap py-12 text-center" style={{ color: 'var(--text-muted)' }}>Usuário não encontrado</div>
 
   const tabs = [
-    { key: 'posts' as Tab, label: 'Posts', icon: FileText, count: profile.postsCount },
+    { key: 'posts' as Tab, label: 'Posts', icon: FileText },
+    { key: 'replies' as Tab, label: 'Respostas', icon: Edit3 },
     ...(isOwn ? [{ key: 'products' as Tab, label: 'Anúncios', icon: Package }] : []),
     { key: 'events' as Tab, label: 'Eventos', icon: CalendarDays },
   ]
@@ -178,9 +193,18 @@ export default function ProfilePage({ params }: { params: Promise<{ username: st
           </div>
 
           <div className="flex gap-5 mt-4">
-            {[{ v: fmtNum(profile.postsCount), l: 'posts' }, { v: fmtNum(profile.followersCount), l: 'seguidores' }, { v: fmtNum(profile.followingCount), l: 'seguindo' }].map(({ v, l }) => (
-              <div key={l}><span className="font-bold" style={{ color: 'var(--text-primary)' }}>{v}</span> <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{l}</span></div>
-            ))}
+            <div className="flex flex-col">
+              <span className="font-bold" style={{ color: 'var(--text-primary)' }}>{fmtNum(profile.postsCount)}</span>
+              <span className="text-xs" style={{ color: 'var(--text-muted)' }}>atividades</span>
+            </div>
+            <button onClick={() => setSocialModal({ open: true, type: 'followers' })} className="flex flex-col hover:opacity-80 transition-opacity text-left">
+              <span className="font-bold" style={{ color: 'var(--text-primary)' }}>{fmtNum(profile.followersCount)}</span>
+              <span className="text-xs" style={{ color: 'var(--text-muted)' }}>seguidores</span>
+            </button>
+            <button onClick={() => setSocialModal({ open: true, type: 'following' })} className="flex flex-col hover:opacity-80 transition-opacity text-left">
+              <span className="font-bold" style={{ color: 'var(--text-primary)' }}>{fmtNum(profile.followingCount)}</span>
+              <span className="text-xs" style={{ color: 'var(--text-muted)' }}>seguindo</span>
+            </button>
           </div>
 
           {profile.currentSubjects.length > 0 && (
@@ -195,19 +219,18 @@ export default function ProfilePage({ params }: { params: Promise<{ username: st
       </div>
 
       <div className="flex gap-1 p-1 rounded-xl w-fit mb-4" style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-primary)' }}>
-        {tabs.map(({ key, label, icon: Icon, count }) => (
+        {tabs.map(({ key, label, icon: Icon }) => (
           <button key={key} onClick={() => setTab(key)}
             className={cn('flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all', tab === key ? 'font-bold' : '')}
             style={tab === key ? { background: 'var(--emerald-500)', color: '#fff' } : { color: 'var(--text-muted)' }}>
             <Icon className="w-3.5 h-3.5" />{label}
-            {count !== undefined && <span className="text-xs opacity-70">({fmtNum(count)})</span>}
           </button>
         ))}
       </div>
 
-      {tab === 'posts' && (
+      {(tab === 'posts' || tab === 'replies') && (
         pLoading ? <div className="space-y-3">{[...Array(2)].map((_, i) => <div key={i} className="h-32 skeleton rounded-xl" />)}</div>
-          : posts.length === 0 ? <div className="card p-8 text-center text-sm" style={{ color: 'var(--text-muted)' }}>Nenhum post</div>
+          : posts.length === 0 ? <div className="card p-8 text-center text-sm" style={{ color: 'var(--text-muted)' }}>Nenhum conteúdo</div>
             : <div className="space-y-3">{posts.map((p) => <PostCard key={p.id} post={p} />)}</div>
       )}
 
@@ -285,6 +308,52 @@ export default function ProfilePage({ params }: { params: Promise<{ username: st
           </div>
         </form>
       </Modal>
+
+      <Modal open={socialModal.open} onClose={() => setSocialModal({ ...socialModal, open: false })}
+        title={socialModal.type === 'followers' ? 'Seguidores' : 'Seguindo'} size="sm">
+        <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
+          {sLoading ? <div className="space-y-4">{[...Array(5)].map((_, i) => <div key={i} className="flex gap-3 items-center"><Sk className="w-10 h-10 rounded-full" /><div className="flex-1 space-y-2"><Sk className="h-4 w-24" /><Sk className="h-3 w-16" /></div></div>)}</div>
+            : socialList.length === 0 ? <div className="py-8 text-center text-sm" style={{ color: 'var(--text-muted)' }}>Ninguém por aqui ainda</div>
+            : socialList.map((u) => (
+              <div key={u.id} className="flex items-center justify-between group">
+                <a href={`/profile/${u.username}`} className="flex items-center gap-3 flex-1 min-w-0">
+                  <Avatar src={u.profilePictureUrl} name={u.fullName} size="md" />
+                  <div className="flex-1 min-w-0">
+                    <p className="font-bold text-sm truncate" style={{ color: 'var(--text-primary)' }}>{u.fullName}</p>
+                    <p className="text-xs truncate" style={{ color: 'var(--text-muted)' }}>@{u.username}</p>
+                  </div>
+                </a>
+                {isAuthenticated && me?.id !== u.id && (
+                  <SocialFollowBtn username={u.username} initialFollowing={u.isFollowing} />
+                )}
+              </div>
+            ))}
+        </div>
+      </Modal>
     </div>
+  )
+}
+
+function SocialFollowBtn({ username, initialFollowing }: { username: string, initialFollowing: boolean }) {
+  const [isFollowing, setIsFollowing] = useState(initialFollowing)
+  const qc = useQueryClient()
+
+  const followMut = useMutation({
+    mutationFn: () => isFollowing ? usersApi.unfollow(username) : usersApi.follow(username),
+    onSuccess: () => {
+      setIsFollowing(!isFollowing)
+      qc.invalidateQueries({ queryKey: ['profile'] })
+      qc.invalidateQueries({ queryKey: ['u-social'] })
+      toast.success(isFollowing ? 'Deixou de seguir' : 'Seguindo!')
+    },
+    onError: () => toast.error('Erro ao processar solicitação'),
+  })
+
+  return (
+    <button onClick={() => followMut.mutate()} disabled={followMut.isPending}
+      className={cn('text-xs font-bold px-3 py-1.5 rounded-lg transition-all disabled:opacity-50',
+        isFollowing ? 'btn-outline' : 'btn-green')}>
+      {isFollowing ? 'Seguindo' : 'Seguir'}
+    </button>
   )
 }

@@ -9,6 +9,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.web.bind.annotation.*;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/users")
@@ -49,8 +50,25 @@ public class UserController {
     @Operation(summary = "Posts de um usuário")
     public Page<PostResponse> getUserPosts(@PathVariable String username,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
-        return postService.getPostsByUser(username, PageRequest.of(page, size, Sort.by("createdAt").descending()));
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "false") boolean includeReplies) {
+        return postService.getPostsByUser(username, includeReplies, PageRequest.of(page, size, Sort.by("createdAt").descending()));
+    }
+
+    @GetMapping("/{username}/followers")
+    @Operation(summary = "Seguidores de um usuário")
+    public Page<UserSummaryResponse> getFollowers(@PathVariable String username,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "50") int size) {
+        return userService.getFollowers(username, PageRequest.of(page, size));
+    }
+
+    @GetMapping("/{username}/following")
+    @Operation(summary = "Quem um usuário segue")
+    public Page<UserSummaryResponse> getFollowing(@PathVariable String username,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "50") int size) {
+        return userService.getFollowing(username, PageRequest.of(page, size));
     }
 
     @GetMapping("/me/events")
@@ -89,5 +107,10 @@ public class UserController {
     @Operation(summary = "Marcar todas as notificações como lidas")
     public void markAllRead() {
         notificationService.markAllAsRead(userService.getCurrentUser().getId());
+    }
+    @PostMapping("/me/notifications/{id}/read")
+    @Operation(summary = "Marcar uma notificação específica como lida")
+    public void markRead(@PathVariable UUID id) {
+        notificationService.markAsRead(userService.getCurrentUser().getId(), id);
     }
 }

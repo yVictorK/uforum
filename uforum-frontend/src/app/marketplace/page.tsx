@@ -29,6 +29,7 @@ export default function MarketplacePage() {
   const [q, setQ] = useState('')
   const [cat, setCat] = useState('')
   const [createOpen, setCreateOpen] = useState(false)
+  const [editProduct, setEditProduct] = useState<Product | null>(null)
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, refetch } = useInfiniteQuery({
     queryKey: ['marketplace', q, cat],
@@ -45,6 +46,31 @@ export default function MarketplacePage() {
       await marketplaceApi.create({ ...d, imageUrls: imgs })
       toast.success('Anúncio criado!'); reset(); setCreateOpen(false); await qc.invalidateQueries({ queryKey: ['marketplace'] }); refetch()
     } catch (err: unknown) { toast.error((err as { response?: { data?: { message?: string } } })?.response?.data?.message ?? 'Erro') }
+  }
+
+  const { register: regEdit, handleSubmit: handleEditSubmit, reset: resetEdit, formState: { isSubmitting: editSubmitting } } = useForm<F>()
+
+  const openEdit = (product: Product) => {
+    resetEdit({
+      title: product.title,
+      description: product.description,
+      price: product.price,
+      category: product.category ?? '',
+      imageUrls: product.imageUrls.join('\n'),
+    })
+    setEditProduct(product)
+  }
+
+  const onEditSubmit = async (d: F) => {
+    if (!editProduct) return
+    try {
+      const imgs = d.imageUrls ? d.imageUrls.split('\n').map((s) => s.trim()).filter(Boolean) : []
+      await marketplaceApi.update(editProduct.id, { ...d, imageUrls: imgs })
+      toast.success('Anúncio atualizado!')
+      setEditProduct(null)
+      resetEdit()
+      await qc.invalidateQueries({ queryKey: ['marketplace'] })
+    } catch (err: unknown) { toast.error((err as { response?: { data?: { message?: string } } })?.response?.data?.message ?? 'Erro ao atualizar') }
   }
 
   return (
@@ -82,7 +108,7 @@ export default function MarketplacePage() {
       ) : (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {products.map((p) => <ProductCard key={p.id} product={p} />)}
+            {products.map((p) => <ProductCard key={p.id} product={p} onDelete={refetch} onEdit={openEdit} />)}
           </div>
           {hasNextPage && <button onClick={() => fetchNextPage()} disabled={isFetchingNextPage} className="btn-outline w-full justify-center py-3 mt-4">{isFetchingNextPage ? 'Carregando...' : 'Mais'}</button>}
         </>
@@ -106,6 +132,22 @@ export default function MarketplacePage() {
           </div>
         </form>
       </Modal>
-    </div>
+
+      <Modal open={!!editProduct} onClose={() => { resetEdit(); setEditProduct(null) }} title="Editar Anúncio" size="lg">
+        <form onSubmit={handleEditSubmit(onEditSubmit)} className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="sm:col-span-2"><label className="label">Título</label><input {...regEdit('title')} className="input" /></div>
+            <div><label className="label">Preço (R$)</label><input {...regEdit('price')} type="number" step="0.01" className="input" /></div>
+            <div><label className="label">Categoria</label><select {...regEdit('category')} className="input"><option value="">Selecionar...</option>{CATS.map((c) => <option key={c} value={c}>{c}</option>)}</select></div>
+            <div className="sm:col-span-2"><label className="label">Descrição</label><textarea {...regEdit('description')} rows={3} className="input resize-none" /></div>
+            <div className="sm:col-span-2"><label className="label">URLs das imagens (uma por linha)</label><textarea {...regEdit('imageUrls')} rows={3} className="input resize-none font-mono text-xs" /></div>
+          </div>
+          <div className="flex justify-end gap-3">
+            <button type="button" onClick={() => { resetEdit(); setEditProduct(null) }} className="btn-outline">Cancelar</button>
+            <button type="submit" disabled={editSubmitting} className="btn-green">{editSubmitting ? 'Salvando...' : 'Salvar alterações'}</button>
+          </div>
+        </form>
+      </Modal>
+    </div >
   )
 }

@@ -1,6 +1,7 @@
 package com.ufam.uforum.service;
 
 import com.ufam.uforum.dto.request.CreateProductRequest;
+import com.ufam.uforum.dto.request.UpdateProductRequest;
 import com.ufam.uforum.dto.response.ProductResponse;
 import com.ufam.uforum.entity.Product;
 import com.ufam.uforum.entity.User;
@@ -86,12 +87,32 @@ public class ProductService {
     }
 
     @Transactional
+    public ProductResponse update(UUID id, UpdateProductRequest req) {
+        User current = userService.getCurrentUser();
+        Product product = findOrThrow(id);
+
+        if (!product.getSeller().getId().equals(current.getId()))
+            throw new UnauthorizedException("Apenas o vendedor pode editar este anúncio");
+
+        if (req.title() != null) product.setTitle(req.title());
+        if (req.description() != null) product.setDescription(req.description());
+        if (req.price() != null) product.setPrice(req.price());
+        if (req.category() != null) product.setCategory(req.category());
+        if (req.imageUrls() != null) {
+            product.getImageUrls().clear();
+            product.getImageUrls().addAll(req.imageUrls());
+        }
+
+        return toResponse(productRepository.save(product));
+    }
+
+    @Transactional
     public void delete(UUID id) {
         User current = userService.getCurrentUser();
         Product product = findOrThrow(id);
 
         boolean isOwner = product.getSeller().getId().equals(current.getId());
-        boolean isAdmin = current.getRole().name().equals("ADMIN");
+        boolean isAdmin = current.getRole().name().equals("ADMIN") || current.getRole().name().equals("MODERATOR");
 
         if (!isOwner && !isAdmin)
             throw new UnauthorizedException("Sem permissão para remover este anúncio");

@@ -11,9 +11,9 @@ import toast from 'react-hot-toast'
 import Link from 'next/link'
 
 const typeIcon: Record<string, { icon: React.ElementType; color: string }> = {
-  POST_REPLY:  { icon: MessageSquare, color: 'var(--emerald-500)' },
-  POST_UPVOTE: { icon: ArrowUp,       color: 'var(--emerald-500)' },
-  NEW_FOLLOWER:{ icon: UserPlus,      color: '#a78bfa' }, // Keeping soft purple for followers
+  POST_REPLY: { icon: MessageSquare, color: 'var(--emerald-500)' },
+  POST_UPVOTE: { icon: ArrowUp, color: 'var(--emerald-500)' },
+  NEW_FOLLOWER: { icon: UserPlus, color: '#a78bfa' },
   EVENT_REMINDER: { icon: CalendarDays, color: '#f59e0b' },
 }
 
@@ -29,11 +29,29 @@ export default function NotificationsPage() {
 
   const markAll = useMutation({
     mutationFn: () => usersApi.markAllRead(),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['notifications'] }); toast.success('Tudo marcado como lido') },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['notifications'] });
+      qc.invalidateQueries({ queryKey: ['unreadCount'] });
+      toast.success('Tudo marcado como lido');
+    },
+  })
+
+  const markRead = useMutation({
+    mutationFn: (id: string) => usersApi.markRead(id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['notifications'] });
+      qc.invalidateQueries({ queryKey: ['unreadCount'] });
+    },
   })
 
   const notifs: Notification[] = data?.content ?? []
-  const hasUnread = notifs.some((n) => !n.isRead)
+  const { data: unreadData } = useQuery({
+    queryKey: ['unreadCount'],
+    queryFn: () => usersApi.getUnreadCount().then((r) => r.data),
+    enabled: !!user,
+  })
+  const unreadCount: number = unreadData ?? notifs.filter((n) => !n.isRead).length
+  const hasUnread = unreadCount > 0
 
   if (!user) return (
     <div className="page-wrap py-16 text-center">
@@ -45,10 +63,10 @@ export default function NotificationsPage() {
 
   return (
     <div className="page-wrap pt-5 pb-6 sm:py-6 max-w-2xl">
-        <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-black">Notificações</h1>
-          {hasUnread && <p className="text-sm mt-0.5" style={{ color: 'var(--emerald-500)' }}>{notifs.filter((n) => !n.isRead).length} não lidas</p>}
+          {hasUnread && <p className="text-sm mt-0.5" style={{ color: 'var(--emerald-500)' }}>{unreadCount} não lidas</p>}
         </div>
         {hasUnread && (
           <button onClick={() => markAll.mutate()} disabled={markAll.isPending} className="btn-ghost text-sm flex items-center gap-1.5">
@@ -70,8 +88,18 @@ export default function NotificationsPage() {
           {notifs.map((n) => {
             const meta = typeIcon[n.type] ?? { icon: Bell, color: 'rgba(255,255,255,0.3)' }
             const Icon = meta.icon
+
+            let href = '#'
+            if (n.type === 'NEW_FOLLOWER' && n.actor) href = `/profile/${n.actor.username}`
+            else if (n.type === 'POST_REPLY' || n.type === 'POST_UPVOTE') href = `/posts/${n.referenceId}`
+            else if (n.type === 'EVENT_REMINDER') href = `/events/${n.referenceId}`
+
             return (
-              <div key={n.id} className={cn('card p-4 flex items-start gap-3 transition-all', !n.isRead && 'border-[var(--emerald-500)]/20 bg-[var(--emerald-500)]/5')}>
+              <Link
+                key={n.id}
+                href={href}
+                onClick={() => { if (!n.isRead) markRead.mutate(n.id) }}
+                className={cn('card p-4 flex items-start gap-3 transition-all hover:-translate-y-0.5 hover:shadow-sm', !n.isRead ? 'border-[var(--emerald-500)]/20 bg-[var(--emerald-500)]/5' : 'hover:bg-[var(--bg-secondary)]')}>
                 {n.actor ? (
                   <Avatar src={n.actor.profilePictureUrl} name={n.actor.fullName} size="sm" />
                 ) : (
@@ -84,7 +112,7 @@ export default function NotificationsPage() {
                   <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>{timeAgo(n.createdAt)}</p>
                 </div>
                 {!n.isRead && <div className="w-2 h-2 rounded-full flex-shrink-0 mt-1.5" style={{ background: 'var(--emerald-500)' }} />}
-              </div>
+              </Link>
             )
           })}
         </div>

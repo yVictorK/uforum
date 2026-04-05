@@ -1,6 +1,7 @@
 package com.ufam.uforum.controller;
 
 import com.ufam.uforum.dto.request.CreateProductRequest;
+import com.ufam.uforum.dto.request.UpdateProductRequest;
 import com.ufam.uforum.dto.response.ProductResponse;
 import com.ufam.uforum.service.ProductService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -53,6 +54,12 @@ public class MarketplaceController {
     @Operation(summary = "Criar anúncio no marketplace")
     public ProductResponse create(@Valid @RequestBody CreateProductRequest req) {
         return productService.create(req);
+    }
+
+    @PatchMapping("/{id}")
+    @Operation(summary = "Editar anúncio")
+    public ProductResponse update(@PathVariable UUID id, @Valid @RequestBody UpdateProductRequest req) {
+        return productService.update(id, req);
     }
 
     @PatchMapping("/{id}/status")

@@ -35,49 +35,64 @@ public class PostService {
     private final UserService userService;
     private final NotificationService notificationService;
 
-    private static final int MAX_DEPTH = 5;
+    private static final int MAX_DEPTH = 500;
 
     public Page<PostResponse> getPostsByCommunity(UUID communityId, Pageable pageable) {
         User current = safeGetCurrentUser();
         return postRepository.findByCommunityIdAndParentIsNullAndIsDeletedFalse(communityId, pageable)
-                .map(p -> toResponse(p, current));
+                .map(p -> toResponse(p, current, null));
     }
 
-    public Page<PostResponse> getPostsByUser(String username, Pageable pageable) {
+    public Page<PostResponse> getPostsByUser(String username, boolean includeReplies, Pageable pageable) {
         User target = userRepository.findByUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuário", username));
         User current = safeGetCurrentUser();
-        return postRepository.findByAuthorIdAndParentIsNullAndIsDeletedFalse(target.getId(), pageable)
-                .map(p -> toResponse(p, current));
+
+        Page<Post> posts;
+        if (includeReplies) {
+            posts = postRepository.findByAuthorIdAndIsDeletedFalse(target.getId(), pageable);
+        } else {
+            posts = postRepository.findByAuthorIdAndParentIsNullAndIsDeletedFalse(target.getId(), pageable);
+        }
+
+        return posts.map(p -> toResponse(p, current, null));
     }
 
     public Page<PostResponse> getReplies(UUID postId, Pageable pageable) {
         User current = safeGetCurrentUser();
         return postRepository.findByParentIdAndIsDeletedFalse(postId, pageable)
-                .map(p -> toResponse(p, current));
+                .map(p -> toResponse(p, current, null));
     }
 
     public PostResponse getById(UUID id) {
         User current = safeGetCurrentUser();
         Post post = findOrThrow(id);
-        return toResponse(post, current);
+        java.util.List<PostResponse> ancestry = new java.util.ArrayList<>();
+        Post parent = post.getParent();
+        int levels = 0;
+        while (parent != null && levels < 10) {
+            ancestry.add(0, toResponse(parent, current, null)); // Sem recursão infinita
+            parent = parent.getParent();
+            levels++;
+        }
+        return toResponse(post, current, ancestry);
     }
 
     public Page<PostResponse> search(String q, Pageable pageable) {
         User current = safeGetCurrentUser();
-        return postRepository.search(q, pageable).map(p -> toResponse(p, current));
+        return postRepository.search(q, pageable).map(p -> toResponse(p, current, null));
     }
 
     public Page<PostResponse> getSaved(Pageable pageable) {
         User current = userService.getCurrentUser();
         return postRepository.findSavedByUserId(current.getId(), pageable)
-                .map(p -> toResponse(p, current));
+                .map(p -> toResponse(p, current, null));
     }
 
     public Page<PostResponse> getFollowingFeed(Pageable pageable) {
         User current = userService.getCurrentUser();
         return postRepository.findByFollowing(current.getId(), pageable)
-                .map(p -> toResponse(p, current));
+                .map(p -> toResponse(p, current, null));
     }
 
     @Transactional
@@ -121,13 +136,13 @@ public class PostService {
 
         if (parent != null) {
             if (!parent.getAuthor().getId().equals(current.getId())) {
-                notificationService.notifyPostReply(parent.getAuthor(), current, post.getId());
+                notificationService.notifyPostReply(parent.getAuthor(), current, post.getId(), post.getContent());
             }
             parent.setRepliesCount(parent.getRepliesCount() + 1);
             postRepository.save(parent);
         }
 
-        return toResponse(post, current);
+        return toResponse(post, current, null);
     }
 
     @Transactional
@@ -159,7 +174,7 @@ public class PostService {
                 notificationService.notifyPostUpvote(post.getAuthor(), current, post.getId());
         }
 
-        return toResponse(postRepository.save(post), current);
+        return toResponse(postRepository.save(post), current, null);
     }
 
     @Transactional
@@ -172,7 +187,7 @@ public class PostService {
         } else {
             post.getSavedBy().add(current);
         }
-        return toResponse(postRepository.save(post), current);
+        return toResponse(postRepository.save(post), current, null);
     }
 
     @Transactional
@@ -184,7 +199,7 @@ public class PostService {
             return;
 
         boolean isAuthor = post.getAuthor().getId().equals(current.getId());
-        boolean isAdmin = current.getRole().name().equals("ADMIN");
+        boolean isAdmin = current.getRole().name().equals("ADMIN") || current.getRole().name().equals("MODERATOR");
         boolean isMod = post.getCommunity() != null &&
                 post.getCommunity().getModerators().stream()
                         .anyMatch(m -> m.getId().equals(current.getId()));
@@ -225,7 +240,7 @@ public class PostService {
         }
     }
 
-    public PostResponse toResponse(Post p, User currentUser) {
+    public PostResponse toResponse(Post p, User currentUser, java.util.List<PostResponse> ancestry) {
         String currentUserVote = null;
         boolean isSaved = false;
 
@@ -244,6 +259,8 @@ public class PostService {
                 p.getParent() != null ? p.getParent().getId() : null,
                 p.getDepth(), p.getUpvotesCount(), p.getDownvotesCount(),
                 p.getScore(), p.getRepliesCount(), p.getIsDeleted(), p.getIsPinned(),
-                currentUserVote, isSaved, p.getCreatedAt(), p.getUpdatedAt());
+                currentUserVote, isSaved, p.getCreatedAt(), p.getUpdatedAt(),
+                ancestry != null ? ancestry : new java.util.ArrayList<>()
+        );
     }
 }

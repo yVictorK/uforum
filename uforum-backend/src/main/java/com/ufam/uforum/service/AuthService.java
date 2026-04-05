@@ -155,7 +155,7 @@ public class AuthService {
 
         UserSummaryResponse summary = new UserSummaryResponse(
             user.getId(), user.getUsername(), user.getFullName(),
-            user.getProfilePictureUrl(), user.getRole().name()
+            user.getProfilePictureUrl(), user.getRole().name(), false
         );
         return new AuthResponse(accessToken, refreshToken, summary);
     }

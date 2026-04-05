@@ -1,25 +1,54 @@
 'use client'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { MessageCircle, Package } from 'lucide-react'
+import { MessageCircle, Package, MoreHorizontal, Trash2, Edit3 } from 'lucide-react'
 import { fmtPrice, statusLabel, whatsappUrl, timeAgo } from '@/lib/utils'
 import { Avatar } from '@/components/ui/Avatar'
+import { useAuthStore } from '@/store/auth'
+import { marketplaceApi } from '@/lib/api'
+import { useQueryClient } from '@tanstack/react-query'
 import type { Product } from '@/types'
 import { motion } from 'framer-motion'
+import toast from 'react-hot-toast'
 
 interface Props {
   product: Product
   compact?: boolean
+  onDelete?: () => void
+  onEdit?: (product: Product) => void
 }
 
-export function ProductCard({ product: p, compact = false }: Props) {
+export function ProductCard({ product: p, compact = false, onDelete, onEdit }: Props) {
+  const { user } = useAuthStore()
+  const qc = useQueryClient()
+  const [mounted, setMounted] = useState(false)
+  const [menu, setMenu] = useState(false)
+
+  useEffect(() => { setMounted(true) }, [])
+
   const img = p.imageUrls?.[0]
   const isAvail = p.status === 'AVAILABLE'
+
+  const isOwner = mounted && user?.id && p.seller?.id && String(user.id) === String(p.seller.id)
+  const isAdmin = mounted && (user?.role === 'ADMIN' || user?.role === 'MODERATOR')
+  const canManage = isOwner || isAdmin
 
   const handleWA = (ev: React.MouseEvent) => {
     ev.preventDefault()
     if (!p.sellerWhatsapp) return
     const msg = `Olá! Vi seu anúncio no UForum: "${p.title}". Ainda disponível?`
     window.open(whatsappUrl(p.sellerWhatsapp, msg), '_blank')
+  }
+
+  const handleDelete = async () => {
+    if (!confirm(`Excluir o anúncio "${p.title}"?`)) return
+    try {
+      await marketplaceApi.delete(p.id)
+      toast.success('Anúncio removido')
+      qc.invalidateQueries({ queryKey: ['marketplace'] })
+      onDelete?.()
+    } catch { toast.error('Erro ao excluir') }
+    setMenu(false)
   }
 
   const statusColors: Record<string, string> = {
@@ -70,6 +99,35 @@ export function ProductCard({ product: p, compact = false }: Props) {
           <div className="absolute bottom-2 right-2 text-xs px-2 py-0.5 rounded-full font-medium"
             style={{ background: 'rgba(0,0,0,0.7)', color: 'rgba(255,255,255,0.7)', backdropFilter: 'blur(4px)' }}>
             +{p.imageUrls.length - 1}
+          </div>
+        )}
+
+        {canManage && (
+          <div className="absolute top-2.5 right-2.5 z-20">
+            <button onClick={() => setMenu(!menu)}
+              className="p-1.5 rounded-lg transition-all shadow-lg"
+              style={{ background: 'rgba(0,0,0,0.6)', color: '#fff', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.1)' }}>
+              <MoreHorizontal className="w-4 h-4" />
+            </button>
+            {menu && (
+              <>
+                <div className="fixed inset-0 z-10" onClick={() => setMenu(false)} />
+                <div className="absolute right-0 top-full mt-1 w-36 rounded-lg z-20 overflow-hidden py-1"
+                  style={{ background: 'var(--bg-tertiary)', border: '1px solid var(--border-primary)', boxShadow: 'var(--shadow-liquid-hover)' }}>
+                  {isOwner && (
+                    <button onClick={() => { onEdit?.(p); setMenu(false) }}
+                      className="w-full flex items-center gap-2 px-3 py-1.5 text-xs hover:bg-[var(--bg-secondary)] transition-colors text-left"
+                      style={{ color: 'var(--text-primary)' }}>
+                      <Edit3 className="w-3.5 h-3.5" />Editar
+                    </button>
+                  )}
+                  <button onClick={handleDelete}
+                    className="w-full flex items-center gap-2 px-3 py-1.5 text-xs hover:bg-[#ef4444]/10 transition-colors text-left" style={{ color: '#ef4444' }}>
+                    <Trash2 className="w-3.5 h-3.5" />Excluir
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         )}
       </div>

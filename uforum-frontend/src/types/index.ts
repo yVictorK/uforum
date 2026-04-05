@@ -28,6 +28,7 @@ export interface Post {
   parentId: string | null; depth: number; upvotesCount: number; downvotesCount: number
   score: number; repliesCount: number; isDeleted: boolean; isPinned: boolean
   currentUserVote: VoteType | null; isSaved: boolean; createdAt: string; updatedAt: string
+  ancestry?: Post[]
 }
 
 export interface Event {

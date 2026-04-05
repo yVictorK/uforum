@@ -119,21 +119,6 @@ export default function CommunityPage({ params }: { params: Promise<{ slug: stri
           <div className="w-full h-full" style={{ background: 'var(--bg-secondary)', borderBottom: '1px solid var(--border-primary)' }} />
         )}
         <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, var(--bg-primary) 0%, transparent 60%)' }} />
-
-        {canManage && (
-          <div className="absolute top-3 right-3 flex gap-2">
-            <button onClick={() => setEditOpen(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
-              style={{ background: 'rgba(0,0,0,0.6)', color: '#fff', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.15)' }}>
-              <Edit3 className="w-3.5 h-3.5" />Editar
-            </button>
-            <button onClick={handleDelete} disabled={deleting}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
-              style={{ background: 'rgba(255,69,69,0.2)', color: '#ff6b6b', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,69,69,0.3)' }}>
-              <Trash2 className="w-3.5 h-3.5" />{deleting ? '...' : 'Excluir'}
-            </button>
-          </div>
-        )}
       </div>
 
       <div className="page-wrap">
@@ -242,11 +227,18 @@ export default function CommunityPage({ params }: { params: Promise<{ slug: stri
               defaultValue={community.iconUrl ?? ''} />
             <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>Imagem quadrada recomendada (400×400px)</p>
           </div>
-          <div className="flex justify-end gap-3 pt-2">
-            <button type="button" onClick={() => { reset(); setEditOpen(false) }} className="btn-outline">Cancelar</button>
-            <button type="submit" disabled={isSubmitting} className="btn-green">
-              {isSubmitting ? 'Salvando...' : 'Salvar alterações'}
+          <div className="flex justify-between items-center pt-2">
+            <button type="button" onClick={handleDelete} disabled={deleting}
+              className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors hover:bg-[#ef4444]/10"
+              style={{ color: '#ef4444' }}>
+              <Trash2 className="w-3.5 h-3.5" />{deleting ? 'Excluindo...' : 'Excluir comunidade'}
             </button>
+            <div className="flex gap-3">
+              <button type="button" onClick={() => { reset(); setEditOpen(false) }} className="btn-outline">Cancelar</button>
+              <button type="submit" disabled={isSubmitting} className="btn-green">
+                {isSubmitting ? 'Salvando...' : 'Salvar alterações'}
+              </button>
+            </div>
           </div>
         </form>
       </Modal>

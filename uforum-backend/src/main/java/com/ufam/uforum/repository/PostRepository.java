@@ -23,6 +23,11 @@ public interface PostRepository extends JpaRepository<Post, UUID> {
     Page<Post> findByAuthorIdAndParentIsNullAndIsDeletedFalse(UUID authorId, Pageable pageable);
 
     @Query(value = "SELECT p FROM Post p JOIN FETCH p.author LEFT JOIN FETCH p.community " +
+           "WHERE p.author.id = :authorId AND p.isDeleted = false",
+           countQuery = "SELECT COUNT(p) FROM Post p WHERE p.author.id = :authorId AND p.isDeleted = false")
+    Page<Post> findByAuthorIdAndIsDeletedFalse(UUID authorId, Pageable pageable);
+
+    @Query(value = "SELECT p FROM Post p JOIN FETCH p.author LEFT JOIN FETCH p.community " +
            "WHERE p.parent.id = :parentId AND p.isDeleted = false",
            countQuery = "SELECT COUNT(p) FROM Post p WHERE p.parent.id = :parentId AND p.isDeleted = false")
     Page<Post> findByParentIdAndIsDeletedFalse(UUID parentId, Pageable pageable);

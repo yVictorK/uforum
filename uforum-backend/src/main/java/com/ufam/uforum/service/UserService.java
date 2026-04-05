@@ -103,10 +103,24 @@ public class UserService {
     }
 
     public UserSummaryResponse toSummary(User user) {
+        User current = safeGetCurrentUser();
+        boolean isFollowing = current != null && current.getFollowing().contains(user);
         return new UserSummaryResponse(
             user.getId(), user.getUsername(), user.getFullName(),
-            user.getProfilePictureUrl(), user.getRole().name()
+            user.getProfilePictureUrl(), user.getRole().name(), isFollowing
         );
+    }
+
+    public org.springframework.data.domain.Page<UserSummaryResponse> getFollowers(String username, org.springframework.data.domain.Pageable pageable) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário", username));
+        return userRepository.findFollowers(user.getId(), pageable).map(this::toSummary);
+    }
+
+    public org.springframework.data.domain.Page<UserSummaryResponse> getFollowing(String username, org.springframework.data.domain.Pageable pageable) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário", username));
+        return userRepository.findFollowing(user.getId(), pageable).map(this::toSummary);
     }
 
     private UserProfileResponse toProfileResponse(User user, User currentUser) {

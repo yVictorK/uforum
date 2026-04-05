@@ -37,6 +37,15 @@ public class NotificationService {
         notificationRepository.markAllAsRead(userId);
     }
 
+    @Transactional
+    public void markAsRead(UUID userId, UUID notificationId) {
+        notificationRepository.findByIdAndRecipientId(notificationId, userId)
+            .ifPresent(n -> {
+                n.setIsRead(true);
+                notificationRepository.save(n);
+            });
+    }
+
     @Async
     @Transactional
     public void notifyNewFollower(User recipient, User actor) {
@@ -48,10 +57,14 @@ public class NotificationService {
 
     @Async
     @Transactional
-    public void notifyPostReply(User recipient, User actor, UUID postId) {
+    public void notifyPostReply(User recipient, User actor, UUID postId, String replyContent) {
         if (recipient.getId().equals(actor.getId())) return;
+        
+        String snippet = replyContent == null ? "" : replyContent;
+        if (snippet.length() > 60) snippet = snippet.substring(0, 57) + "...";
+        
         save(recipient, actor, NotificationType.POST_REPLY,
-             actor.getFullName() + " respondeu ao seu post",
+             actor.getFullName() + " respondeu: \"" + snippet + "\"",
              postId, "POST");
     }
 
@@ -90,7 +103,7 @@ public class NotificationService {
         UserSummaryResponse actor = n.getActor() == null ? null : new UserSummaryResponse(
             n.getActor().getId(), n.getActor().getUsername(),
             n.getActor().getFullName(), n.getActor().getProfilePictureUrl(),
-            n.getActor().getRole().name()
+            n.getActor().getRole().name(), false
         );
         return new NotificationResponse(
             n.getId(), n.getType().name(), n.getMessage(),

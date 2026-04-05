@@ -29,5 +29,11 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     @Query("SELECT COUNT(u) FROM User u JOIN u.followers f WHERE u.id = :userId")
     long countFollowers(UUID userId);
 
+    @Query("SELECT f FROM User u JOIN u.followers f WHERE u.id = :userId")
+    org.springframework.data.domain.Page<User> findFollowers(UUID userId, org.springframework.data.domain.Pageable pageable);
+
+    @Query("SELECT f FROM User u JOIN u.following f WHERE u.id = :userId")
+    org.springframework.data.domain.Page<User> findFollowing(UUID userId, org.springframework.data.domain.Pageable pageable);
+
     long countByIsActiveTrue();
 }

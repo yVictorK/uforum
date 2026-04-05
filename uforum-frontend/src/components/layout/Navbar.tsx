@@ -8,6 +8,7 @@ import { Avatar } from '@/components/ui/Avatar'
 import { Logo } from '@/components/ui/Logo'
 import { useAuthStore } from '@/store/auth'
 import { usersApi } from '@/lib/api'
+import { useQuery } from '@tanstack/react-query'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useTheme } from '@/components/providers/ThemeProvider'
 
@@ -23,25 +24,24 @@ export function Navbar() {
   const { user, isAuthenticated, logout } = useAuthStore()
   const router = useRouter()
   const pathname = usePathname()
-  const [unread, setUnread] = useState(0)
   const [search, setSearch] = useState('')
   const [mobileOpen, setMobileOpen] = useState(false)
   const [userMenu, setUserMenu] = useState(false)
   const { theme, toggleTheme } = useTheme()
   const [scrolled, setScrolled] = useState(false)
 
+  const { data: unread = 0 } = useQuery({
+    queryKey: ['unreadCount'],
+    queryFn: () => usersApi.getUnreadCount().then((r) => Number(r.data)),
+    enabled: isAuthenticated,
+    refetchInterval: 30000,
+  })
+
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 8)
     window.addEventListener('scroll', handler)
     return () => window.removeEventListener('scroll', handler)
   }, [])
-
-  useEffect(() => {
-    if (!isAuthenticated) return
-    usersApi.getUnreadCount().then((r) => setUnread(Number(r.data))).catch(() => { })
-    const iv = setInterval(() => usersApi.getUnreadCount().then((r) => setUnread(Number(r.data))).catch(() => { }), 30000)
-    return () => clearInterval(iv)
-  }, [isAuthenticated])
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
@@ -97,9 +97,9 @@ export function Navbar() {
                 <Link href="/notifications" className="btn-ghost p-2 rounded-lg relative">
                   <Bell className="w-4 h-4" />
                   {unread > 0 && (
-                    <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full text-[9px] font-bold flex items-center justify-center"
+                    <span className="absolute -top-1 -right-1.5 min-w-[18px] h-[18px] rounded-full text-[10px] font-bold flex items-center justify-center px-1"
                       style={{ background: 'var(--emerald-500)', color: '#fff' }}>
-                      {unread > 9 ? '9+' : unread}
+                      {unread > 99 ? '99+' : unread}
                     </span>
                   )}
                 </Link>
