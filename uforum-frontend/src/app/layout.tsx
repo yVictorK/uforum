@@ -9,11 +9,33 @@ const geistMono = JetBrains_Mono({ subsets: ['latin'], variable: '--font-geist-m
 export const metadata: Metadata = {
   title: { default: 'UForum', template: '%s · UForum' },
   description: 'A rede social da Universidade Federal do Amazonas',
+  icons: {
+    icon: '/logo.svg',
+    shortcut: '/logo.svg',
+    apple: '/logo.svg',
+  }
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="pt-BR" className="dark">
+    <html lang="pt-BR" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  const saved = localStorage.getItem('uforum-theme');
+                  const supportDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                  const theme = saved || (supportDark ? 'dark' : 'light');
+                  if (theme === 'dark') document.documentElement.classList.add('dark');
+                  else document.documentElement.classList.add('light');
+                } catch (e) {}
+              })();
+            `,
+          }}
+        />
+      </head>
       <body className={`${outfit.variable} ${geistMono.variable} font-sans antialiased min-h-[100dvh] bg-[var(--bg-primary)] text-[var(--text-primary)] transition-colors duration-300 overflow-x-hidden`}>
         <Providers>{children}</Providers>
       </body>

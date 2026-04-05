@@ -14,23 +14,24 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined)
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<Theme>('dark')
+  const [mounted, setMounted] = useState(false)
   const pathname = usePathname()
 
   const isStaticRoute = pathname === '/' || pathname.startsWith('/auth')
 
   useEffect(() => {
+    setMounted(true)
+    const html = document.documentElement
+
     if (isStaticRoute) {
+      setTheme('dark')
       applyTheme('dark')
       return
     }
 
-    const savedTheme = localStorage.getItem('uforum-theme') as Theme | null
-    if (savedTheme) {
-      setTheme(savedTheme)
-      applyTheme(savedTheme)
-    } else {
-      applyTheme('dark')
-    }
+    // Lê o tema que já foi aplicado pelo script do layout.tsx
+    const currentTheme = html.classList.contains('light') ? 'light' : 'dark'
+    setTheme(currentTheme)
   }, [pathname, isStaticRoute])
 
   const applyTheme = (t: Theme) => {
