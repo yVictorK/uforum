@@ -9,5 +9,6 @@ public record CreateMapBlockRequest(
     @NotNull Double latitude,
     @NotNull Double longitude,
     String polygonCoords,
-    Integer floorCount
+    Integer floorCount,
+    Integer roomsPerFloor
 ) {}

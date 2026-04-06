@@ -5,7 +5,7 @@ import dynamic from 'next/dynamic'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { toast } from 'react-hot-toast'
-import { ArrowLeft, MapPin, Trash2 } from 'lucide-react'
+import { ArrowLeft, MapPin, Trash2, Layers } from 'lucide-react'
 import Link from 'next/link'
 
 import { useAuthStore } from '@/store/auth'
@@ -17,19 +17,16 @@ import type { MapBlock } from '@/types'
 const LeafletMap = dynamic(() => import('@/components/map/LeafletMap'), {
   ssr: false,
   loading: () => (
-    <div className="w-full h-full flex items-center justify-center bg-zinc-950">
-      <div className="w-5 h-5 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+    <div className="w-full h-full flex flex-col items-center justify-center" style={{ background: 'var(--bg-primary)' }}>
+      <div className="w-6 h-6 border-2 border-[var(--emerald-500)] border-t-transparent rounded-full animate-spin mb-4" />
+      <p className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>Carregando mapa interativo...</p>
     </div>
   )
 })
 
-interface BlockForm {
-  name: string;
-  code: string;
-  description: string;
-  floorCount: number;
-}
+import { BlockEditorModal } from '@/components/admin/map/BlockEditorModal'
 
+// Interface and type inside page (keep here or use from types)
 type ModalMode = 'CREATE' | 'EDIT' | null;
 
 export default function AdminMapPage() {
@@ -41,8 +38,6 @@ export default function AdminMapPage() {
   const [modalMode, setModalMode] = useState<ModalMode>(null)
   const [currentCoord, setCurrentCoord] = useState<{ lat: number, lng: number } | null>(null)
   const [isDelOpen, setIsDelOpen] = useState(false)
-
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<BlockForm>()
 
   useEffect(() => {
     if (typeof window !== 'undefined' && !isAuthenticated) return;
@@ -60,7 +55,7 @@ export default function AdminMapPage() {
   const { mutate: mutateCreate, isPending: isCreating } = useMutation({
     mutationFn: (d: any) => mapApi.createBlock(d),
     onSuccess: () => {
-      toast.success('Bloco adicionado ao mapa com sucesso!')
+      toast.success('Bloco e grid de salas gerados com sucesso!')
       qc.invalidateQueries({ queryKey: ['map-blocks'] })
       closeModal()
     },
@@ -95,35 +90,21 @@ export default function AdminMapPage() {
     setModalMode(null)
     setCurrentCoord(null)
     setSelectedBlock(null)
-    reset({ name: '', code: '', description: '', floorCount: 1 })
-  }
-
-  const onSubmit = (data: BlockForm) => {
-    if (!currentCoord) return;
-    const payload = {
-      ...data,
-      latitude: currentCoord.lat,
-      longitude: currentCoord.lng,
-      floorCount: Number(data.floorCount)
-    }
-
-    if (modalMode === 'CREATE') {
-      mutateCreate(payload)
-    } else if (modalMode === 'EDIT') {
-      mutateUpdate(payload)
-    }
   }
 
   if (!user || user.role !== 'ADMIN') {
-    return <div className="min-h-screen bg-zinc-950" />
+    return <div className="min-h-screen" style={{ background: 'var(--bg-primary)' }} />
   }
 
   const isLoading = isCreating || isUpdating || isDeleting;
 
   return (
-    <div className="flex flex-col h-[100dvh] w-full bg-zinc-950">
+    <div className="flex flex-col h-[100dvh] w-full" style={{ background: 'var(--bg-primary)' }}>
       <div className="page-wrap pt-6 w-full max-w-5xl flex-shrink-0">
         <AdminNav />
+        <div className="flex items-center justify-between mt-3 mb-1">
+          <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Clique no mapa para adicionar um bloco, ou clique em um bloco existente para editar.</p>
+        </div>
       </div>
 
       <div className="flex-1 relative cursor-crosshair">
@@ -134,90 +115,27 @@ export default function AdminMapPage() {
           onSelect={(b) => {
             setSelectedBlock(b)
             setCurrentCoord({ lat: b.latitude, lng: b.longitude })
-            reset({ name: b.name, code: b.code, description: b.description || '', floorCount: b.floorCount })
             setModalMode('EDIT')
           }}
           onMapClick={(lat, lng) => {
             setSelectedBlock(null)
             setCurrentCoord({ lat, lng })
-            reset({ name: '', code: '', description: '', floorCount: 1 })
             setModalMode('CREATE')
           }}
         />
       </div>
 
       {modalMode && currentCoord && (
-        <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 w-full max-w-md shadow-2xl relative">
-            <div className="flex justify-between items-start mb-2">
-              <h2 className="text-xl font-bold text-white">
-                {modalMode === 'CREATE' ? 'Adicionar Novo Local' : 'Editar Localização'}
-              </h2>
-              {modalMode === 'EDIT' && (
-                <button type="button" onClick={() => setIsDelOpen(true)} disabled={isLoading}
-                  className="p-1.5 text-zinc-500 hover:text-red-500 hover:bg-red-500/10 rounded-md transition-colors" title="Excluir Localização">
-                  <Trash2 className="w-5 h-5" />
-                </button>
-              )}
-            </div>
-            <p className="text-sm text-emerald-400 mb-6 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 rounded-md break-all">
-              Lat: {currentCoord.lat.toFixed(6)} <br />
-              Lng: {currentCoord.lng.toFixed(6)}
-            </p>
-
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-zinc-300 mb-1">Nome do Estabelecimento / Bloco</label>
-                <input
-                  {...register('name', { required: true })}
-                  placeholder="Ex: Biblioteca de Direito"
-                  className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-emerald-500"
-                />
-                {errors.name && <span className="text-xs text-red-500 mt-1">Nome é obrigatório</span>}
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-zinc-300 mb-1">Sigla / Código</label>
-                  <input
-                    {...register('code', { required: true })}
-                    placeholder="Ex: BDIR"
-                    className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-emerald-500"
-                  />
-                  {errors.code && <span className="text-xs text-red-500 mt-1">Obrigatório</span>}
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-zinc-300 mb-1">Andares</label>
-                  <input
-                    type="number"
-                    {...register('floorCount', { required: true, min: 1 })}
-                    placeholder="1"
-                    className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-emerald-500"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-zinc-300 mb-1">Descrição</label>
-                <textarea
-                  {...register('description')}
-                  rows={3}
-                  placeholder="Ex: Biblioteca setorial do setor Norte. Entrada pela praça."
-                  className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-emerald-500 resize-none"
-                />
-              </div>
-
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-zinc-800/50 mt-2">
-                <button type="button" onClick={closeModal} disabled={isLoading} className="px-4 py-2 text-sm font-medium text-zinc-400 hover:text-white transition-colors">
-                  Cancelar
-                </button>
-                <button type="submit" disabled={isLoading} className="btn-green py-2 px-6 shadow-glow-emerald">
-                  {isLoading ? 'Carregando...' : modalMode === 'CREATE' ? 'Adicionar Ponto' : 'Salvar Alterações'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
+        <BlockEditorModal
+          coord={currentCoord}
+          block={selectedBlock}
+          mode={modalMode}
+          onClose={closeModal}
+          onSaveCreate={mutateCreate}
+          onSaveUpdate={mutateUpdate}
+          isSaving={isCreating || isUpdating}
+          onDeleteBlock={() => setIsDelOpen(true)}
+        />
       )}
 
       {selectedBlock && (
@@ -227,7 +145,7 @@ export default function AdminMapPage() {
           onConfirm={() => mutateDelete()}
           loading={isDeleting}
           title="Excluir Localização"
-          description={`Deseja excluir "${selectedBlock.name}" permanentemente do mapa?`}
+          description={`Deseja excluir "${selectedBlock.name}" e todas as suas salas permanentemente do mapa?`}
           confirmText="Sim, Excluir"
         />
       )}

@@ -9,6 +9,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
 
+import com.ufam.uforum.entity.Floor;
+import com.ufam.uforum.entity.Room;
+import com.ufam.uforum.enums.RoomType;
+import com.ufam.uforum.repository.FloorRepository;
+import com.ufam.uforum.repository.RoomRepository;
 import java.util.List;
 import java.util.UUID;
 
@@ -18,6 +23,8 @@ import java.util.UUID;
 public class MapBlockService {
 
     private final MapBlockRepository mapBlockRepository;
+    private final FloorRepository floorRepository;
+    private final RoomRepository roomRepository;
 
     public List<MapBlockResponse> listAll() {
         return mapBlockRepository.findByIsActiveTrue().stream().map(this::toResponse).toList();
@@ -43,7 +50,38 @@ public class MapBlockService {
             .polygonCoords(req.polygonCoords())
             .floorCount(req.floorCount() != null ? req.floorCount() : 1)
             .build();
-        return toResponse(mapBlockRepository.save(block));
+        block = mapBlockRepository.save(block);
+
+        int fCount = block.getFloorCount();
+        int rCount = req.roomsPerFloor() != null ? req.roomsPerFloor() : 0;
+
+        for (int f = 1; f <= fCount; f++) {
+            Floor floor = Floor.builder()
+                .mapBlock(block)
+                .number(f)
+                .name(f == 1 ? "Térreo" : f + "º Andar")
+                .build();
+            floor = floorRepository.save(floor);
+
+            if (rCount > 0) {
+                double totalWidth = 1000.0;
+                double roomWidth = totalWidth / rCount;
+                for (int r = 1; r <= rCount; r++) {
+                    Room room = Room.builder()
+                        .floor(floor)
+                        .name("Sala " + (f * 100 + r))
+                        .number(String.valueOf(f * 100 + r))
+                        .type(RoomType.CLASSROOM)
+                        .x((r - 1) * roomWidth)
+                        .y(100.0) // keep it vertically centered inside generation
+                        .width(roomWidth)
+                        .height(100.0) // fixed wide horizontal shape
+                        .build();
+                    roomRepository.save(room);
+                }
+            }
+        }
+        return toResponse(block);
     }
 
     @Transactional
@@ -66,6 +104,7 @@ public class MapBlockService {
         MapBlock block = mapBlockRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Bloco", id));
         block.setIsActive(false);
+        block.setCode(block.getCode() + "_DEL_" + System.currentTimeMillis());
         mapBlockRepository.save(block);
     }
 

@@ -1,14 +1,16 @@
 'use client'
 import { useEffect, useRef, useState } from 'react'
 import type { MapBlock } from '@/types'
+import { useMapStore } from '@/store/map'
+import { useTheme } from '@/components/providers/ThemeProvider'
 import Link from 'next/link'
 import { Maximize2 } from 'lucide-react'
 
 interface Props {
   blocks: MapBlock[]
-  selected: MapBlock | null
+  selected?: MapBlock | null
   userPos: [number, number] | null
-  onSelect: (b: MapBlock) => void
+  onSelect?: (b: MapBlock) => void
   onMapClick?: (lat: number, lng: number) => void
   showExpandButton?: boolean
 }
@@ -16,19 +18,29 @@ interface Props {
 const UFAM: [number, number] = [-3.0907, -59.9635]
 
 export default function LeafletMap({ blocks, selected, userPos, onSelect, onMapClick, showExpandButton }: Props) {
+  const mapStore = useMapStore()
+  const { theme } = useTheme()
+  // If explicit props are provided (admin page), use them. Otherwise use Zustand store.
+  const effectiveSelected = selected !== undefined ? selected : mapStore.selectedBlock
   const ref = useRef<HTMLDivElement>(null)
-  const [map, setMap] = useState<ReturnType<typeof import('leaflet')['map']> | null>(null)
-
+  const mapInstanceRef = useRef<any>(null)
   const initializingRef = useRef(false)
+  const [map, setInternalMap] = useState<any>(null)
 
   useEffect(() => {
-    if (!ref.current || map || initializingRef.current) return
+    if (!ref.current || mapInstanceRef.current || initializingRef.current) return
 
     initializingRef.current = true
 
     import('leaflet').then((L) => {
       const container = ref.current
-      if (!container || (container as any)._leaflet_id) {
+      if (!container) {
+        initializingRef.current = false
+        return
+      }
+
+      // If Leaflet already initialized this container, don't do it again
+      if ((container as any)._leaflet_id) {
         initializingRef.current = false
         return
       }
@@ -40,35 +52,53 @@ export default function LeafletMap({ blocks, selected, userPos, onSelect, onMapC
         shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
       })
 
-      const mapInstance = L.map(container, { center: UFAM, zoom: 16, zoomControl: false })
-      L.control.zoom({ position: 'topright' }).addTo(mapInstance)
+      const newMap = L.map(container, { center: UFAM, zoom: 16, zoomControl: false })
+      L.control.zoom({ position: 'topright' }).addTo(newMap)
 
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-        attribution: '© OpenStreetMap contributors © CARTO',
-        maxZoom: 20,
-      }).addTo(mapInstance)
-
-      mapInstance.on('click', (e: any) => {
+      newMap.on('click', (e: any) => {
         if (onMapClick) onMapClick(e.latlng.lat, e.latlng.lng)
       })
 
-      setMap(mapInstance)
+      mapInstanceRef.current = newMap
+      setInternalMap(newMap)
       initializingRef.current = false
     })
 
-    return () => {
+    return () => {}
+  }, [onMapClick])
 
-    }
-  }, [onMapClick, map])
+  // Sync theme
+  useEffect(() => {
+    if (!map) return
+    import('leaflet').then((L) => {
+      // Remove old tile layers
+      map.eachLayer((layer: any) => {
+        if (layer._url && layer._url.includes('basemaps.cartocdn.com')) {
+          map.removeLayer(layer)
+        }
+      })
+
+      const isLight = theme === 'light'
+      const tileUrl = isLight 
+        ? 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png' // better light map
+        : 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+
+      L.tileLayer(tileUrl, {
+        attribution: '© OpenStreetMap contributors © CARTO',
+        maxZoom: 20,
+      }).addTo(map)
+    })
+  }, [map, theme])
 
   useEffect(() => {
     return () => {
-      if (map) {
-        map.remove()
-        setMap(null)
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.remove()
+        mapInstanceRef.current = null
+        setInternalMap(null)
       }
     }
-  }, [map])
+  }, [])
 
   useEffect(() => {
     if (!map) return
@@ -83,17 +113,24 @@ export default function LeafletMap({ blocks, selected, userPos, onSelect, onMapC
         const icon = L.divIcon({
           className: '',
           html: `<div style="
-            background: #02833B; color: #fff; padding: 4px 10px;
-            border-radius: 10px; font-size: 11px; font-weight: 800;
-            white-space: nowrap; box-shadow: 0 4px 12px rgba(2,131,59,0.5);
-            border: 1px solid rgba(255,255,255,0.2); cursor: pointer;
-            transition: all 0.15s;
+            background: #02833B; color: #fff; padding: 6px 14px;
+            border-radius: 12px; font-size: 13px; font-weight: 800;
+            white-space: nowrap; box-shadow: 0 4px 16px rgba(2,131,59,0.4);
+            border: 2px solid rgba(255,255,255,0.8); cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
           ">${block.code}</div>`,
-          iconAnchor: [20, 16],
+          iconAnchor: [24, 20],
         })
         const m = L.marker([block.latitude, block.longitude], { icon })
           .addTo(map)
-          .on('click', () => onSelect(block))
+          .on('click', () => {
+            if (onSelect) {
+              onSelect(block)
+            } else {
+              mapStore.setSelectedBlock(block)
+              mapStore.setBuildingViewOpen(true)
+            }
+          })
 
         markers.push(m)
       })
@@ -103,11 +140,11 @@ export default function LeafletMap({ blocks, selected, userPos, onSelect, onMapC
       isMounted = false
       markers.forEach(m => m.remove())
     }
-  }, [blocks, onSelect, map])
+  }, [blocks, map, onSelect, mapStore])
 
   useEffect(() => {
-    if (selected && map) map.setView([selected.latitude, selected.longitude], 18, { animate: true })
-  }, [selected, map])
+    if (effectiveSelected && map) map.setView([effectiveSelected.latitude, effectiveSelected.longitude], 18, { animate: true })
+  }, [effectiveSelected, map])
 
   useEffect(() => {
     if (!userPos || !map) return

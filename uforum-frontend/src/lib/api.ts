@@ -126,9 +126,22 @@ export const marketplaceApi = {
 export const mapApi = {
   listBlocks: (q?: string) =>
     api.get(`/map/blocks${q ? `?q=${encodeURIComponent(q)}` : ''}`),
+  getBlock: (id: string) => api.get(`/map/blocks/${id}`),
   createBlock: (d: unknown) => api.post('/map/blocks', d),
   updateBlock: (id: string, d: unknown) => api.put(`/map/blocks/${id}`, d),
   deleteBlock: (id: string) => api.delete(`/map/blocks/${id}`),
+  // Floors
+  getFloorsByBlock: (blockId: string) => api.get(`/map/blocks/${blockId}/floors`),
+  getFloor: (id: string) => api.get(`/map/floors/${id}`),
+  createFloor: (d: unknown) => api.post('/map/floors', d),
+  deleteFloor: (id: string) => api.delete(`/map/floors/${id}`),
+  // Rooms
+  getRoomsByFloor: (floorId: string) => api.get(`/map/floors/${floorId}/rooms`),
+  createRoom: (d: unknown) => api.post('/map/rooms', d),
+  updateRoom: (id: string, d: unknown) => api.put(`/map/rooms/${id}`, d),
+  deleteRoom: (id: string) => api.delete(`/map/rooms/${id}`),
+  // Search
+  searchRooms: (q: string) => api.get(`/map/search?q=${encodeURIComponent(q)}`),
 }
 
 export const reportsApi = {

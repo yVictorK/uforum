@@ -54,6 +54,33 @@ export interface Notification {
   referenceId: string | null; referenceType: string | null; isRead: boolean; createdAt: string
 }
 
+export interface Floor {
+  id: string;
+  blockId: string;
+  number: number;
+  name: string;
+  rooms?: Room[];
+}
+
+export type RoomType = 'CLASSROOM' | 'LAB' | 'ADMIN' | 'OTHER'
+
+export interface Room {
+  id: string;
+  floorId: string;
+  blockId: string;
+  blockName?: string;
+  blockCode?: string;
+  floorNumber?: number;
+  name: string;
+  number: string | null;
+  type: RoomType;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  metadata?: string;
+}
+
 export interface Page<T> {
   content: T[]; totalElements: number; totalPages: number
   size: number; number: number; first: boolean; last: boolean

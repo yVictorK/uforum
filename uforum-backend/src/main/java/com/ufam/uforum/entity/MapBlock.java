@@ -38,6 +38,10 @@ public class MapBlock {
     @Builder.Default
     private Integer floorCount = 1;
 
+    @OneToMany(mappedBy = "mapBlock", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private java.util.List<Floor> floors = new java.util.ArrayList<>();
+
     @Column(name = "is_active", nullable = false)
     @Builder.Default
     private Boolean isActive = true;
