@@ -17,6 +17,7 @@
 /app/src/main/java/com/ufam/uforum/controller/AuthController.java
 /app/src/main/java/com/ufam/uforum/dto/request/ResetPasswordRequest.java
 /app/src/main/java/com/ufam/uforum/repository/PostVoteRepository.java
+/app/src/main/java/com/ufam/uforum/dto/request/UpdateProductRequest.java
 /app/src/main/java/com/ufam/uforum/controller/ReportController.java
 /app/src/main/java/com/ufam/uforum/security/UserDetailsServiceImpl.java
 /app/src/main/java/com/ufam/uforum/repository/PostRepository.java
