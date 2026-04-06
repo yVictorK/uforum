@@ -67,6 +67,7 @@ export default function AdminMapPage() {
     onSuccess: () => {
       toast.success('Localização atualizada com sucesso!')
       qc.invalidateQueries({ queryKey: ['map-blocks'] })
+      qc.invalidateQueries({ queryKey: ['floors', selectedBlock!.id] })
       closeModal()
     },
     onError: () => toast.error('Erro ao atualizar localização.')

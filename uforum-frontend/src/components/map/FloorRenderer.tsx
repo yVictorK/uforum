@@ -1,14 +1,16 @@
 'use client'
-import React, { useCallback, useMemo } from 'react'
+import React, { useCallback, useMemo, useEffect } from 'react'
 import { Stage, Layer, Rect, Text, Group, Line, Circle } from 'react-konva'
 import { Maximize2, RotateCcw, ZoomIn, ZoomOut } from 'lucide-react'
-import type { Room } from '@/types'
+import type { Room, MapBlock } from '@/types'
 import { useTheme } from '@/components/providers/ThemeProvider'
 import Konva from 'konva'
 
 interface FloorRendererProps {
   rooms: Room[]
   selectedRoomId?: string | null
+  allBlocks?: MapBlock[]
+  currentBlock?: MapBlock | null
   onRoomClick?: (room: Room) => void
   width: number
   height: number
@@ -24,24 +26,25 @@ const ROOM_COLORS: Record<string, { fillDark: string; fillLight: string; stroke:
 const GridBackground = ({ width, height, scale }: any) => {
   const gridSize = 40
   const lines: React.ReactNode[] = []
-  
+
   for (let i = 0; i < width / gridSize + 2; i++) {
     lines.push(<Line key={`v-${i}`} points={[i * gridSize, 0, i * gridSize, height]} stroke="rgba(0,0,0,0.04)" strokeWidth={1} listening={false} />)
   }
   for (let j = 0; j < height / gridSize + 2; j++) {
     lines.push(<Line key={`h-${j}`} points={[0, j * gridSize, width, j * gridSize]} stroke="rgba(0,0,0,0.04)" strokeWidth={1} listening={false} />)
   }
-  
+
   return <Group listening={false}>{lines}</Group>
 }
 
-function FloorRendererInner({ rooms, selectedRoomId, onRoomClick, width, height }: FloorRendererProps) {
+function FloorRendererInner({ rooms, selectedRoomId, allBlocks = [], currentBlock, onRoomClick, width, height }: FloorRendererProps) {
   const { theme } = useTheme()
   const isDark = theme === 'dark'
   const stageRef = React.useRef<Konva.Stage>(null)
+
   const [scale, setScale] = React.useState(1)
   const [position, setPosition] = React.useState({ x: 0, y: 0 })
-  
+
   const padding = 60
   const effectiveWidth = Math.max(1, width - padding * 2)
   const effectiveHeight = Math.max(1, height - padding * 2)
@@ -55,50 +58,64 @@ function FloorRendererInner({ rooms, selectedRoomId, onRoomClick, width, height 
     return { minX, minY, maxX, maxY, contentWidth: maxX - minX, contentHeight: maxY - minY }
   }, [rooms])
 
-  // Initial fit-to-screen scale - more aggressive for larger rooms
-  const initialScale = useMemo(() => {
+
+  const { initialScale, initialPosition } = useMemo(() => {
     const w = Math.floor(width)
     const h = Math.floor(height)
-    if (w < 50 || h < 50) return 1
+    if (w < 50 || h < 50) return { initialScale: 1, initialPosition: { x: 0, y: 0 } }
+
     const sX = (w - padding * 2) / bounds.contentWidth
     const sY = (h - padding * 2) / bounds.contentHeight
-    return Math.min(sX, sY) * 1.4 // Balanced large rooms
+    const s = Math.min(sX, sY) * 0.85
+
+    return {
+      initialScale: s,
+      initialPosition: {
+        x: w / 2 - s * (bounds.minX + bounds.contentWidth / 2),
+        y: h / 2 - s * (bounds.minY + bounds.contentHeight / 2)
+      }
+    }
   }, [width, height, bounds])
 
-  const initialPosition = useMemo(() => {
-    const w = Math.floor(width)
-    const h = Math.floor(height)
-    if (w < 50 || h < 50) return { x: 0, y: 0 }
-    return {
-      x: w / 2 - initialScale * (bounds.minX + bounds.contentWidth / 2),
-      y: h / 2 - initialScale * (bounds.minY + bounds.contentHeight / 2)
+  useEffect(() => {
+    if (stageRef.current) {
+      stageRef.current.scale({ x: initialScale, y: initialScale })
+      stageRef.current.position(initialPosition)
+      stageRef.current.batchDraw()
     }
-  }, [width, height, bounds, initialScale])
+  }, [initialScale, initialPosition])
 
-  // Reset to initial view
   const resetView = useCallback(() => {
-    setScale(1)
-    setPosition({ x: 0, y: 0 })
-  }, [])
+    if (stageRef.current) {
+      stageRef.current.to({
+        scaleX: initialScale,
+        scaleY: initialScale,
+        x: initialPosition.x,
+        y: initialPosition.y,
+        duration: 0.4,
+        easing: Konva.Easings.EaseInOut
+      })
+    }
+  }, [initialScale, initialPosition])
 
   const handleWheel = (e: any) => {
     e.evt.preventDefault()
-    const stage = e.target.getStage()
+    const stage = stageRef.current
+    if (!stage) return
     const pointer = stage.getPointerPosition()
     if (!pointer) return
 
     const oldScale = stage.scaleX()
-
     const mousePointTo = {
       x: (pointer.x - stage.x()) / oldScale,
       y: (pointer.y - stage.y()) / oldScale,
     }
 
     const direction = e.evt.deltaY > 0 ? -1 : 1
-    const newScale = direction > 0 ? oldScale * 1.1 : oldScale / 1.1
-    
-    // Limits
-    if (newScale < 0.1 || newScale > 10) return
+    const scaleBy = 1.12
+    const newScale = direction > 0 ? oldScale * scaleBy : oldScale / scaleBy
+
+    if (newScale < 0.05 || newScale > 20) return
 
     stage.scale({ x: newScale, y: newScale })
 
@@ -124,34 +141,58 @@ function FloorRendererInner({ rooms, selectedRoomId, onRoomClick, width, height 
   }
 
   return (
-    <div className="w-full h-full rounded-2xl overflow-hidden shadow-2xl border relative group" 
+    <div className="w-full h-full rounded-2xl overflow-hidden shadow-2xl border relative group"
       style={{ background: 'var(--bg-tertiary)', borderColor: 'var(--border-primary)' }}>
-      
-      {/* Decorative radial gradient for depth */}
-      <div className="absolute inset-0 opacity-40 pointer-events-none" 
-        style={{ background: 'radial-gradient(circle at 50% 50%, var(--emerald-500) 0%, transparent 80%)', filter: 'blur(120px)' }} />
-      
-      {/* Controls Overlay */}
+
+
       <div className="absolute bottom-6 right-6 z-10 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
         <button onClick={resetView} className="p-2.5 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-primary)] shadow-xl hover:scale-105 active:scale-95 transition-all text-[var(--text-primary)]" title="Resetar Zoom">
           <RotateCcw className="w-4 h-4" />
         </button>
       </div>
 
-      <Stage 
-        width={width} 
-        height={height} 
-        draggable 
+      <Stage
+        width={width}
+        height={height}
+        draggable
         onWheel={handleWheel}
         ref={stageRef}
         pixelRatio={typeof window !== 'undefined' ? window.devicePixelRatio : 1}
       >
         <Layer>
-          {/* Subtle Grid */}
-          <GridBackground width={width * 5} height={height * 5} scale={1} />
-          
-          <Group x={initialPosition.x} y={initialPosition.y} scale={{ x: initialScale, y: initialScale }}>
-            {/* Building Envelope */}
+          <GridBackground width={width * 10} height={height * 10} scale={1} />
+          {currentBlock && allBlocks.filter(b => b.id !== currentBlock.id).map(block => {
+            const dx = (block.longitude - currentBlock.longitude) * 200000
+            const dy = (currentBlock.latitude - block.latitude) * 200000
+
+            if (Math.abs(dx) > 5000 || Math.abs(dy) > 5000) return null
+
+            return (
+              <Group key={block.id} x={dx} y={dy}>
+                <Rect
+                  width={200}
+                  height={150}
+                  fill={isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)'}
+                  stroke={isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'}
+                  strokeWidth={1}
+                  cornerRadius={12}
+                />
+                <Text
+                  text={block.code}
+                  width={200}
+                  height={150}
+                  align="center"
+                  verticalAlign="middle"
+                  fill={isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}
+                  fontSize={14}
+                  fontFamily="Outfit"
+                  fontStyle="bold"
+                />
+              </Group>
+            )
+          })}
+
+          <Group>
             <Rect
               x={bounds.minX - 20}
               y={bounds.minY - 20}

@@ -271,7 +271,7 @@ export default function FeedInner() {
                         ))}
                       </div>
                     ) : products.length === 0 ? (
-                      <div className="card p-6 text-center text-sm" style={{ color: 'rgba(255,255,255,0.25)' }}>
+                      <div className="card p-6 text-center text-sm" style={{ color: 'var(--text-muted)' }}>
                         Nenhum produto disponível ainda
                       </div>
                     ) : (

@@ -12,6 +12,7 @@ import java.util.UUID;
 @Repository
 public interface RoomRepository extends JpaRepository<Room, UUID> {
     List<Room> findAllByFloorId(UUID floorId);
+    void deleteAllByFloorId(UUID floorId);
 
     @Query("SELECT r FROM Room r JOIN r.floor f JOIN f.mapBlock b " +
            "WHERE b.isActive = true AND (" +

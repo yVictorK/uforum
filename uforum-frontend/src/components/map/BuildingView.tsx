@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import dynamic from 'next/dynamic'
 import { useMapStore } from '@/store/map'
-import type { Floor, Room } from '@/types'
+import type { Floor, Room, MapBlock } from '@/types'
 import { MapPin, X, Info } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import { mapApi } from '@/lib/api'
@@ -48,7 +48,15 @@ export default function BuildingView() {
     enabled: !!selectedBlock && buildingViewOpen,
   })
 
-  // Auto-select first floor or the floor matching highlightedRoomId
+  const { data: allBlocks = [] } = useQuery<MapBlock[]>({
+    queryKey: ['map-blocks'],
+    queryFn: async () => {
+      const res = await mapApi.listBlocks()
+      return res.data
+    },
+    enabled: buildingViewOpen,
+  })
+
   useEffect(() => {
     if (floors.length === 0) return
     if (highlightedRoomId) {
@@ -65,7 +73,6 @@ export default function BuildingView() {
     }
   }, [floors, highlightedRoomId, selectedFloor, setSelectedFloor])
 
-  // ResizeObserver for dynamic Konva sizing
   const containerRef = useCallback((node: HTMLDivElement | null) => {
     if (node) {
       const resizeObserver = new ResizeObserver((entries) => {
@@ -77,7 +84,6 @@ export default function BuildingView() {
         }
       })
       resizeObserver.observe(node)
-      // Initial measure
       setContainerSize({
         width: node.clientWidth,
         height: node.clientHeight,
@@ -86,7 +92,6 @@ export default function BuildingView() {
     }
   }, [])
 
-  // Clean up when closing
   const handleClose = () => {
     setBuildingViewOpen(false)
     setSelectedRoom(null)
@@ -101,16 +106,16 @@ export default function BuildingView() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[2000] flex items-center justify-center bg-black/40 backdrop-blur-md p-0 md:p-4 lg:p-8"
+      className="fixed inset-0 z-[2000] flex items-center justify-center bg-black/15 backdrop-blur-[2px] p-0 md:p-4 lg:p-6"
       onClick={(e) => { if (e.target === e.currentTarget) handleClose() }}
     >
       <motion.div
-        initial={{ scale: 0.95, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        exit={{ scale: 0.95, opacity: 0 }}
+        initial={{ scale: 0.9, opacity: 0, y: 20 }}
+        animate={{ scale: 1, opacity: 1, y: 0 }}
+        exit={{ scale: 0.9, opacity: 0, y: 20 }}
         onAnimationComplete={() => setIsReady(true)}
-        className="w-[95vw] h-[60vh] max-w-[1440px] rounded-3xl shadow-2xl overflow-hidden flex flex-col border"
-        style={{ background: 'var(--bg-primary)', borderColor: 'var(--border-primary)' }}
+        className="w-[98vw] h-[90vh] md:h-[85vh] max-w-[1600px] rounded-[32px] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.3)] overflow-hidden flex flex-col border backdrop-blur-xl"
+        style={{ background: 'var(--bg-primary-90)', borderColor: 'var(--border-primary)' }}
       >
         {/* Header */}
         <div className="px-5 py-4 border-b border-[var(--border-primary)] flex items-center justify-between flex-shrink-0" style={{ background: 'var(--bg-secondary)' }}>
@@ -133,11 +138,11 @@ export default function BuildingView() {
 
         <div className="flex-1 flex flex-col md:flex-row min-h-0">
           {/* Floor Selector Sidebar & Mobile Bar */}
-          <div className="w-full md:w-64 border-b md:border-b-0 md:border-r p-3 md:p-5 flex flex-row md:flex-col gap-2 overflow-x-auto md:overflow-y-auto flex-shrink-0 no-scrollbar" 
+          <div className="w-full md:w-64 border-b md:border-b-0 md:border-r p-3 md:p-5 flex flex-row md:flex-col gap-2 overflow-x-auto md:overflow-y-auto flex-shrink-0 no-scrollbar"
             style={{ borderColor: 'var(--border-primary)', background: 'var(--bg-secondary)' }}>
-            
+
             <h3 className="hidden md:block text-[10px] font-black uppercase tracking-[0.2em] mb-4 opacity-50" style={{ color: 'var(--text-primary)' }}>Andares</h3>
-            
+
             {floors.length === 0 ? (
               <p className="text-xs italic px-2" style={{ color: 'var(--text-muted)' }}>Nenhum andar cadastrado</p>
             ) : (
@@ -172,7 +177,6 @@ export default function BuildingView() {
               ))
             )}
 
-            {/* Room Details Panel */}
             {selectedRoom && (
               <div className="mt-4 pt-4 border-t" style={{ borderColor: 'var(--border-primary)' }}>
                 <h3 className="text-[10px] font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--text-muted)' }}>Sala Selecionada</h3>
@@ -190,7 +194,6 @@ export default function BuildingView() {
             )}
           </div>
 
-          {/* Main Visualization Area */}
           <div className="flex-1 relative p-6 lg:p-8 flex items-center justify-center min-h-0" ref={containerRef}>
             <AnimatePresence mode="wait">
               {isReady && selectedFloor && containerSize.width > 0 ? (
@@ -204,6 +207,8 @@ export default function BuildingView() {
                   <FloorRenderer
                     rooms={selectedFloor.rooms || []}
                     selectedRoomId={highlightedRoomId}
+                    allBlocks={allBlocks}
+                    currentBlock={selectedBlock}
                     onRoomClick={(room) => {
                       setSelectedRoom(room)
                       setHighlightedRoomId(room.id)

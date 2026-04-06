@@ -54,7 +54,7 @@ export default function FloorEditor({ floor, rooms, onSaveRoom, onDeleteRoom, wi
     if (w < 50 || h < 50) return 1
     const sX = (w - 40) / bounds.contentWidth
     const sY = (h - 40) / bounds.contentHeight
-    return Math.min(sX, sY) * 1.4 // Senior Refinement: 1.4x scale
+    return Math.min(sX, sY) * 0.85
   }, [width, height, bounds])
 
   const initialPosition = useMemo(() => {

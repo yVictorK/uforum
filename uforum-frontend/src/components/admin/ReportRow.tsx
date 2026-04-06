@@ -79,9 +79,12 @@ export function ReportRow({ report }: { report: Report }) {
 
   return (
     <>
-      <div className="border-b border-zinc-800 last:border-0">
+      <div style={{ borderBottom: '1px solid var(--border-primary)' }}>
         <div 
-          className={`group flex items-center gap-4 px-6 py-4 cursor-pointer hover:bg-zinc-800/30 transition-colors ${expanded ? 'bg-zinc-800/20' : ''}`}
+          className="group flex items-center gap-4 px-6 py-4 cursor-pointer transition-colors"
+          style={{ background: expanded ? 'var(--bg-secondary)' : 'transparent' }}
+          onMouseEnter={(e) => { if (!expanded) e.currentTarget.style.background = 'var(--bg-secondary)' }}
+          onMouseLeave={(e) => { if (!expanded) e.currentTarget.style.background = 'transparent' }}
           onClick={() => setExpanded(!expanded)}
         >
           <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-primary)' }}>
@@ -93,33 +96,36 @@ export function ReportRow({ report }: { report: Report }) {
               <span className="badge bg-amber-500/10 text-amber-500 border-amber-500/20 text-[10px]">
                 {reasonLabels[report.reason] || report.reason}
               </span>
-              <span className="text-xs text-zinc-500">• Denunciado por</span>
-              <span className="text-xs font-bold text-zinc-300">@{report.reporter.username}</span>
+              <span className="text-xs" style={{ color: 'var(--text-muted)' }}>• Denunciado por</span>
+              <span className="text-xs font-bold" style={{ color: 'var(--text-secondary)' }}>@{report.reporter.username}</span>
             </div>
-            <p className="text-sm text-zinc-400 truncate">
+            <p className="text-sm truncate" style={{ color: 'var(--text-muted)' }}>
               {report.description || 'Nenhuma descrição adicional.'}
             </p>
           </div>
 
           <div className="text-right flex-shrink-0">
-            <p className="text-xs text-zinc-500 mb-1">{fmtDate(report.createdAt)}</p>
-            {expanded ? <ChevronUp className="w-4 h-4 ml-auto opacity-50" /> : <ChevronDown className="w-4 h-4 ml-auto opacity-50" />}
+            <p className="text-xs mb-1" style={{ color: 'var(--text-muted)' }}>{fmtDate(report.createdAt)}</p>
+            {expanded
+              ? <ChevronUp className="w-4 h-4 ml-auto opacity-50" style={{ color: 'var(--text-muted)' }} />
+              : <ChevronDown className="w-4 h-4 ml-auto opacity-50" style={{ color: 'var(--text-muted)' }} />
+            }
           </div>
         </div>
 
         {expanded && (
-          <div className="px-6 py-5 bg-zinc-900/40 border-t border-zinc-800 animate-in slide-in-from-top-1 duration-200">
+          <div className="px-6 py-5 animate-in slide-in-from-top-1 duration-200" style={{ background: 'var(--bg-secondary)', borderTop: '1px solid var(--border-primary)' }}>
             <div className="flex flex-col lg:flex-row gap-6">
               <div className="flex-1">
-                <h4 className="text-xs font-black uppercase tracking-wider mb-3 text-zinc-500">Conteúdo Denunciado</h4>
+                <h4 className="text-xs font-black uppercase tracking-wider mb-3" style={{ color: 'var(--text-muted)' }}>Conteúdo Denunciado</h4>
                 {loadingPost ? (
                   <div className="space-y-3 p-4 card opacity-50">
                     <div className="flex gap-3"><Sk className="w-8 h-8 rounded-full" /><Sk className="h-4 w-24" /></div>
                     <Sk className="h-4 w-full" /><Sk className="h-4 w-3/4" />
                   </div>
                 ) : postError ? (
-                  <div className="p-8 text-center card border-dashed border-zinc-800">
-                    <p className="text-sm text-zinc-500">Post não encontrado ou já deletado.</p>
+                  <div className="p-8 text-center card" style={{ borderStyle: 'dashed', borderColor: 'var(--border-primary)' }}>
+                    <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Post não encontrado ou já deletado.</p>
                   </div>
                 ) : (
                   <div className="pointer-events-none opacity-90 scale-[0.98] origin-top border rounded-2xl overflow-hidden" 
@@ -130,10 +136,11 @@ export function ReportRow({ report }: { report: Report }) {
               </div>
 
               <div className="lg:w-64 space-y-4">
-                <h4 className="text-xs font-black uppercase tracking-wider text-zinc-500">Ações de Moderação</h4>
+                <h4 className="text-xs font-black uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Ações de Moderação</h4>
                 <div className="space-y-2">
                   <button onClick={() => resolveOnly()}
-                    className="w-full flex items-center gap-2 px-4 py-2.5 rounded-xl border border-zinc-700 bg-zinc-800 hover:bg-zinc-700 text-sm font-semibold transition-all">
+                    className="w-full flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all"
+                    style={{ background: 'var(--bg-tertiary)', border: '1px solid var(--border-primary)', color: 'var(--text-primary)' }}>
                     <CheckCircle className="w-4 h-4 text-emerald-500" /> Ignorar Denúncia
                   </button>
                   <button onClick={() => setIsDelOpen(true)} disabled={!!postError}
@@ -145,9 +152,9 @@ export function ReportRow({ report }: { report: Report }) {
                     <Ban className="w-4 h-4" /> Banir Autor
                   </button>
                 </div>
-                <div className="p-3 rounded-lg bg-zinc-950/50 border border-zinc-800">
-                  <p className="text-[10px] text-zinc-500 leading-relaxed uppercase font-bold tracking-widest mb-1 italic">Dica de Segurança</p>
-                  <p className="text-[11px] text-zinc-400">Banir o autor removerá o acesso dele à plataforma imediatamente.</p>
+                <div className="p-3 rounded-lg" style={{ background: 'var(--bg-tertiary)', border: '1px solid var(--border-primary)' }}>
+                  <p className="text-[10px] leading-relaxed uppercase font-bold tracking-widest mb-1 italic" style={{ color: 'var(--text-muted)' }}>Dica de Segurança</p>
+                  <p className="text-[11px]" style={{ color: 'var(--text-secondary)' }}>Banir o autor removerá o acesso dele à plataforma imediatamente.</p>
                 </div>
               </div>
             </div>

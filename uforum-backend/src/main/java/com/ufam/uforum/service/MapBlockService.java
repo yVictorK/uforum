@@ -59,7 +59,7 @@ public class MapBlockService {
             Floor floor = Floor.builder()
                 .mapBlock(block)
                 .number(f)
-                .name(f == 1 ? "Térreo" : f + "º Andar")
+                .name(f + "º Andar")
                 .build();
             floor = floorRepository.save(floor);
 
@@ -94,8 +94,48 @@ public class MapBlockService {
         block.setDescription(req.description());
         block.setLatitude(req.latitude());
         block.setLongitude(req.longitude());
-        block.setFloorCount(req.floorCount() != null ? req.floorCount() : 1);
-        
+
+        int requestedFloors = req.floorCount() != null ? req.floorCount() : 1;
+        List<Floor> existingFloors = floorRepository.findAllByMapBlockIdOrderByNumberAsc(id);
+        int currentCount = existingFloors.size();
+
+        if (requestedFloors > currentCount) {
+            int rCount = req.roomsPerFloor() != null ? req.roomsPerFloor() : 0;
+            for (int f = currentCount + 1; f <= requestedFloors; f++) {
+                Floor floor = Floor.builder()
+                    .mapBlock(block)
+                    .number(f)
+                    .name(f + "º Andar")
+                    .build();
+                floor = floorRepository.save(floor);
+
+                if (rCount > 0) {
+                    double totalWidth = 1000.0;
+                    double roomWidth = totalWidth / rCount;
+                    for (int r = 1; r <= rCount; r++) {
+                        Room room = Room.builder()
+                            .floor(floor)
+                            .name("Sala " + (f * 100 + r))
+                            .number(String.valueOf(f * 100 + r))
+                            .type(com.ufam.uforum.enums.RoomType.CLASSROOM)
+                            .x((r - 1) * roomWidth)
+                            .y(100.0)
+                            .width(roomWidth)
+                            .height(100.0)
+                            .build();
+                        roomRepository.save(room);
+                    }
+                }
+            }
+        } else if (requestedFloors < currentCount) {
+            List<Floor> toRemove = existingFloors.subList(requestedFloors, currentCount);
+            for (Floor f : toRemove) {
+                roomRepository.deleteAllByFloorId(f.getId());
+                floorRepository.delete(f);
+            }
+        }
+
+        block.setFloorCount(requestedFloors);
         return toResponse(mapBlockRepository.save(block));
     }
 

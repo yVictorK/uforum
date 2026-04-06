@@ -97,29 +97,30 @@ export default function AdminUsersPage() {
           { icon: CalendarDays, label: 'Eventos Criados', value: metrics?.totalEvents, load: loadingMetrics, color: 'text-rose-500' },
         ].map((m, i) => (
           <div key={i} className="card p-5 relative overflow-hidden group">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-[0.02] rounded-full -translate-y-16 translate-x-16 group-hover:scale-110 transition-transform duration-500" />
-            <div className={`w-10 h-10 rounded-xl mb-4 flex items-center justify-center bg-white/5`}>
+            <div className="absolute top-0 right-0 w-32 h-32 opacity-[0.02] rounded-full -translate-y-16 translate-x-16 group-hover:scale-110 transition-transform duration-500" style={{ background: 'var(--text-primary)' }} />
+            <div className="w-10 h-10 rounded-xl mb-4 flex items-center justify-center" style={{ background: 'var(--bg-tertiary)' }}>
               <m.icon className={`w-5 h-5 ${m.color}`} />
             </div>
-            <p className="text-zinc-400 text-sm font-medium">{m.label}</p>
+            <p className="text-sm font-medium" style={{ color: 'var(--text-muted)' }}>{m.label}</p>
             {m.load ? <Sk className="h-8 w-16 mt-1" /> : (
-              <h2 className="text-3xl font-bold mt-1 tracking-tight">{m.value}</h2>
+              <h2 className="text-3xl font-bold mt-1 tracking-tight" style={{ color: 'var(--text-primary)' }}>{m.value}</h2>
             )}
           </div>
         ))}
       </div>
 
       <div className="card overflow-hidden">
-        <div className="p-4 border-b border-zinc-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <h2 className="font-bold text-lg flex items-center gap-2">
-            <Users className="w-5 h-5 text-zinc-400" /> Usuários Registrados
+        <div className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4" style={{ borderBottom: '1px solid var(--border-primary)' }}>
+          <h2 className="font-bold text-lg flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+            <Users className="w-5 h-5" style={{ color: 'var(--text-muted)' }} /> Usuários Registrados
           </h2>
           <div className="relative w-full sm:w-64">
-            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" />
+            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-muted)' }} />
             <input
               value={search} onChange={e => setSearch(e.target.value)}
               placeholder="Buscar usuário..."
-              className="w-full bg-zinc-950/50 border border-zinc-700/50 rounded-lg pl-9 pr-3 py-2 text-sm focus:outline-none focus:border-emerald-500 transition-colors"
+              className="w-full rounded-lg pl-9 pr-3 py-2 text-sm focus:outline-none transition-colors"
+              style={{ background: 'var(--bg-tertiary)', border: '1px solid var(--border-primary)', color: 'var(--text-primary)' }}
             />
           </div>
         </div>
@@ -131,24 +132,24 @@ export default function AdminUsersPage() {
             </div>
           ) : (
             <table className="w-full text-left text-sm whitespace-nowrap">
-              <thead className="bg-zinc-900/50 text-zinc-400">
+              <thead style={{ background: 'var(--bg-secondary)' }}>
                 <tr>
-                  <th className="px-6 py-4 font-medium">Usuário</th>
-                  <th className="px-6 py-4 font-medium">Cargo</th>
-                  <th className="px-6 py-4 font-medium">Status</th>
-                  <th className="px-6 py-4 font-medium">Data de Registro</th>
-                  <th className="px-6 py-4 font-medium text-right">Ações</th>
+                  <th className="px-6 py-4 font-medium" style={{ color: 'var(--text-muted)' }}>Usuário</th>
+                  <th className="px-6 py-4 font-medium" style={{ color: 'var(--text-muted)' }}>Cargo</th>
+                  <th className="px-6 py-4 font-medium" style={{ color: 'var(--text-muted)' }}>Status</th>
+                  <th className="px-6 py-4 font-medium" style={{ color: 'var(--text-muted)' }}>Data de Registro</th>
+                  <th className="px-6 py-4 font-medium text-right" style={{ color: 'var(--text-muted)' }}>Ações</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-zinc-800">
-                {filteredUsers.map((u: any) => (
-                  <tr key={u.id} className="hover:bg-zinc-800/20 transition-colors group">
+              <tbody style={{ borderTop: '1px solid var(--border-primary)' }}>
+                {filteredUsers.map((u: any, idx: number) => (
+                  <tr key={u.id} className="group transition-colors hover:brightness-110" style={{ borderBottom: '1px solid var(--border-primary)', background: idx % 2 === 0 ? 'transparent' : 'var(--bg-secondary)' }}>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <Avatar name={u.fullName} size="sm" src={undefined} />
                         <div>
-                          <p className="font-semibold text-white truncate max-w-[150px]">{u.fullName}</p>
-                          <p className="text-zinc-500 text-xs truncate max-w-[150px]">@{u.username}</p>
+                          <p className="font-semibold truncate max-w-[150px]" style={{ color: 'var(--text-primary)' }}>{u.fullName}</p>
+                          <p className="text-xs truncate max-w-[150px]" style={{ color: 'var(--text-muted)' }}>@{u.username}</p>
                         </div>
                       </div>
                     </td>
@@ -168,7 +169,7 @@ export default function AdminUsersPage() {
                         </div>
                       )}
                     </td>
-                    <td className="px-6 py-4 text-zinc-400 text-xs">
+                    <td className="px-6 py-4 text-xs" style={{ color: 'var(--text-muted)' }}>
                       {format(new Date(u.createdAt), "dd 'de' MMM, yyyy", { locale: ptBR })}
                     </td>
                     <td className="px-6 py-4 text-right">
@@ -177,7 +178,8 @@ export default function AdminUsersPage() {
                           value={u.role}
                           onChange={(e) => changeRole({ id: u.id, role: e.target.value })}
                           disabled={user.role === 'MODERATOR' && (u.role === 'ADMIN' || u.role === 'MODERATOR')}
-                          className="bg-zinc-900 border border-zinc-700 text-zinc-300 text-xs rounded-lg px-2 py-1.5 focus:outline-none focus:border-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="text-xs rounded-lg px-2 py-1.5 focus:outline-none focus:border-[var(--emerald-500)] disabled:opacity-50 disabled:cursor-not-allowed"
+                          style={{ background: 'var(--bg-tertiary)', border: '1px solid var(--border-primary)', color: 'var(--text-secondary)' }}
                         >
                           <option value="STUDENT">Student</option>
                           <option value="EVENT_MANAGER">Event Manager</option>
@@ -200,7 +202,7 @@ export default function AdminUsersPage() {
                 ))}
                 {filteredUsers.length === 0 && !loadingUsers && (
                   <tr>
-                    <td colSpan={5} className="px-6 py-12 text-center text-zinc-500">
+                    <td colSpan={5} className="px-6 py-12 text-center" style={{ color: 'var(--text-muted)' }}>
                       Nenhum usuário encontrado.
                     </td>
                   </tr>
@@ -210,8 +212,8 @@ export default function AdminUsersPage() {
           )}
         </div>
 
-        <div className="p-4 border-t border-zinc-800 bg-zinc-900/30 flex justify-end">
-          <p className="text-xs text-zinc-500">Mostrando até 20 registros por página.</p>
+        <div className="p-4 flex justify-end" style={{ borderTop: '1px solid var(--border-primary)', background: 'var(--bg-secondary)' }}>
+          <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Mostrando até 20 registros por página.</p>
         </div>
       </div>
 

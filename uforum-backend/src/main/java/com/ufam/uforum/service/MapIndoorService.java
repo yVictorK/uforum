@@ -58,8 +58,14 @@ public class MapIndoorService {
                 .number(req.getNumber())
                 .name(req.getName())
                 .build();
+        floor = floorRepository.save(floor);
 
-        return toFloorResponse(floorRepository.save(floor));
+        // Sync floorCount
+        long total = floorRepository.findAllByMapBlockIdOrderByNumberAsc(block.getId()).size();
+        block.setFloorCount((int) total);
+        mapBlockRepository.save(block);
+
+        return toFloorResponse(floor);
     }
 
     @Transactional
@@ -93,8 +99,15 @@ public class MapIndoorService {
 
     @Transactional
     public void deleteFloor(UUID id) {
-        if (!floorRepository.existsById(id)) throw new ResourceNotFoundException("Andar", id);
-        floorRepository.deleteById(id);
+        Floor floor = floorRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Andar", id));
+        MapBlock block = floor.getMapBlock();
+        roomRepository.deleteAllByFloorId(id);
+        floorRepository.delete(floor);
+        // Sync floorCount
+        long remaining = floorRepository.findAllByMapBlockIdOrderByNumberAsc(block.getId()).size();
+        block.setFloorCount((int) remaining);
+        mapBlockRepository.save(block);
     }
 
     @Transactional

@@ -17,7 +17,7 @@ public class MapBlock {
     @Column(nullable = false, length = 100)
     private String name; // ex: "Bloco A - FT", "Biblioteca Central"
 
-    @Column(nullable = false, length = 20)
+    @Column(nullable = false, length = 100)
     private String code; // ex: "FT-A", "BCT"
 
     @Column(length = 500)

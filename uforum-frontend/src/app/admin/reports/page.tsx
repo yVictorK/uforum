@@ -38,9 +38,9 @@ export default function AdminReportsPage() {
       <AdminNav />
 
       <div className="card overflow-hidden">
-        <div className="p-4 border-b border-zinc-800 flex items-center justify-between">
-          <h2 className="font-bold text-lg flex items-center gap-2">
-            <Flag className="w-5 h-5 text-zinc-400" /> Fila de Moderação
+        <div className="p-4 flex items-center justify-between" style={{ borderBottom: '1px solid var(--border-primary)' }}>
+          <h2 className="font-bold text-lg flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+            <Flag className="w-5 h-5" style={{ color: 'var(--text-muted)' }} /> Fila de Moderação
           </h2>
           <span className="text-xs px-2 py-1 rounded bg-amber-500/10 text-amber-500 font-bold border border-amber-500/20">
             {reportsData?.totalElements || 0} pendentes
@@ -57,11 +57,11 @@ export default function AdminReportsPage() {
               <div className="w-16 h-16 rounded-full bg-emerald-500/10 flex items-center justify-center mx-auto mb-4 border border-emerald-500/20">
                 <ShieldAlert className="w-8 h-8 text-emerald-500" />
               </div>
-              <h3 className="font-bold text-white mb-1">Nenhuma denúncia no momento!</h3>
-              <p className="text-sm text-zinc-500">Tudo limpo por aqui. A comunidade está em paz.</p>
+              <h3 className="font-bold mb-1" style={{ color: 'var(--text-primary)' }}>Nenhuma denúncia no momento!</h3>
+              <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Tudo limpo por aqui. A comunidade está em paz.</p>
             </div>
           ) : (
-            <div className="divide-y divide-zinc-800">
+            <div>
               {reports.map((r: any) => (
                 <ReportRow key={r.id} report={r} />
               ))}
@@ -70,12 +70,12 @@ export default function AdminReportsPage() {
         </div>
 
         {reportsData && reportsData.totalPages > 1 && (
-          <div className="p-4 border-t border-zinc-800 flex justify-between items-center bg-zinc-900/20">
+          <div className="p-4 flex justify-between items-center" style={{ borderTop: '1px solid var(--border-primary)', background: 'var(--bg-secondary)' }}>
              <button 
               disabled={page === 0}
               onClick={() => setPage(p => p - 1)}
               className="btn-outline px-4 py-1.5 text-xs disabled:opacity-30">Anterior</button>
-             <span className="text-xs font-medium text-zinc-500">Página {page + 1} de {reportsData.totalPages}</span>
+             <span className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>Página {page + 1} de {reportsData.totalPages}</span>
              <button 
               disabled={page >= reportsData.totalPages - 1}
               onClick={() => setPage(p => p + 1)}

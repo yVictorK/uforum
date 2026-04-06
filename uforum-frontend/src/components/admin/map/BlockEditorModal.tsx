@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { useForm } from 'react-hook-form'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'react-hot-toast'
-import { Trash2, Layers, X, Plus } from 'lucide-react'
+import { Trash2, Layers, X, Plus, Minus } from 'lucide-react'
 import dynamic from 'next/dynamic'
 import { mapApi } from '@/lib/api'
 import { cn } from '@/lib/utils'
@@ -40,11 +40,12 @@ interface BlockForm {
 
 export function BlockEditorModal({ coord, block, mode, onClose, onSaveCreate, onSaveUpdate, isSaving, onDeleteBlock }: BlockEditorModalProps) {
   const qc = useQueryClient()
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<BlockForm>()
+  const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<BlockForm>()
+  const floorCountValue = watch('floorCount', block?.floorCount || 1)
   const [selectedFloor, setSelectedFloor] = useState<Floor | null>(null)
-  
+
   const [containerSize, setContainerSize] = useState({ width: 600, height: 400 })
-  
+
   const containerRef = useCallback((node: HTMLDivElement | null) => {
     if (node) {
       const resizeObserver = new ResizeObserver((entries) => {
@@ -125,6 +126,35 @@ export function BlockEditorModal({ coord, block, mode, onClose, onSaveCreate, on
     onError: () => toast.error('Erro ao salvar sala.'),
   })
 
+  const addFloor = useMutation({
+    mutationFn: () => {
+      const nextNumber = floors.length > 0 ? Math.max(...floors.map(f => f.number)) + 1 : 1
+      return mapApi.createFloor({
+        blockId: block!.id,
+        number: nextNumber,
+        name: `${nextNumber}º Andar`,
+      })
+    },
+    onSuccess: (res: any) => {
+      toast.success('Andar adicionado!')
+      qc.invalidateQueries({ queryKey: ['floors', block?.id] })
+      qc.invalidateQueries({ queryKey: ['map-blocks'] })
+      setSelectedFloor(res.data)
+    },
+    onError: () => toast.error('Erro ao adicionar andar.'),
+  })
+
+  const removeFloor = useMutation({
+    mutationFn: (floorId: string) => mapApi.deleteFloor(floorId),
+    onSuccess: () => {
+      toast.success('Andar removido!')
+      qc.invalidateQueries({ queryKey: ['floors', block?.id] })
+      qc.invalidateQueries({ queryKey: ['map-blocks'] })
+      setSelectedFloor(null)
+    },
+    onError: () => toast.error('Erro ao remover andar.'),
+  })
+
   const handleRoomSave = (roomData: Partial<Room>) => {
     saveRoom.mutate(roomData)
   }
@@ -152,7 +182,7 @@ export function BlockEditorModal({ coord, block, mode, onClose, onSaveCreate, on
   return (
     <div className="fixed inset-0 z-[1000] flex items-center justify-center p-0 md:p-4 lg:p-8 bg-black/40 backdrop-blur-sm">
       <div className="md:rounded-3xl w-[95vw] max-w-[1440px] h-full md:h-[80vh] shadow-2xl flex flex-col md:flex-row overflow-hidden relative border-t md:border" style={{ background: 'var(--bg-primary)', borderColor: 'var(--border-primary)' }}>
-        
+
         {/* Left Panel: Form */}
         <div className="w-full md:w-80 lg:w-96 flex-shrink-0 border-r flex flex-col h-full overflow-y-auto" style={{ background: 'var(--bg-secondary)', borderColor: 'var(--border-primary)' }}>
           <div className="p-5 border-b flex justify-between items-center sticky top-0 z-10 backdrop-blur-md" style={{ borderColor: 'var(--border-primary)', background: 'var(--bg-secondary)' }}>
@@ -194,12 +224,30 @@ export function BlockEditorModal({ coord, block, mode, onClose, onSaveCreate, on
                 {errors.code && <span className="text-xs text-red-500 mt-1 block">Obrigatório</span>}
               </div>
               <div>
-                <input
-                  type="number"
-                  {...register('floorCount', { required: true, min: 1 })}
-                  className="w-full rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[var(--emerald-500)] transition-colors"
-                  style={{ background: 'var(--bg-tertiary)', border: '1px solid var(--border-primary)', color: 'var(--text-primary)' }}
-                />
+                <input type="hidden" {...register('floorCount', { required: true, min: 1, max: 20 })} />
+                <div className="flex items-center rounded-xl overflow-hidden" style={{ border: '1px solid var(--border-primary)' }}>
+                  <button
+                    type="button"
+                    onClick={() => { const v = Math.max(1, floorCountValue - 1); setValue('floorCount', v) }}
+                    disabled={floorCountValue <= 1}
+                    className="px-3 py-2.5 transition-colors disabled:opacity-30"
+                    style={{ background: 'var(--bg-tertiary)', color: 'var(--text-primary)' }}
+                  >
+                    <Minus className="w-3.5 h-3.5" />
+                  </button>
+                  <span className="flex-1 text-center text-sm font-bold tabular-nums" style={{ background: 'var(--bg-tertiary)', color: 'var(--text-primary)', padding: '0.625rem 0' }}>
+                    {floorCountValue}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => { const v = Math.min(20, floorCountValue + 1); setValue('floorCount', v) }}
+                    disabled={floorCountValue >= 20}
+                    className="px-3 py-2.5 transition-colors disabled:opacity-30"
+                    style={{ background: 'var(--bg-tertiary)', color: 'var(--text-primary)' }}
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -210,7 +258,8 @@ export function BlockEditorModal({ coord, block, mode, onClose, onSaveCreate, on
                   type="number"
                   {...register('roomsPerFloor', { min: 0 })}
                   defaultValue={4}
-                  className="w-full bg-emerald-500/10 border border-emerald-500/30 rounded-xl px-4 py-2.5 text-sm text-emerald-100 focus:outline-none focus:border-emerald-500 transition-colors"
+                  className="w-full bg-emerald-500/10 border border-emerald-500/30 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-emerald-500 transition-colors"
+                  style={{ color: 'var(--text-muted)' }}
                 />
                 <p className="text-[10px] mt-1.5 leading-relaxed" style={{ color: 'var(--text-muted)' }}>
                   O sistema irá dividir perfeitamente a área em fatias horizontais rígidas. Se uma for excluída, o restante ocupa o espaço automaticamente.
@@ -227,17 +276,17 @@ export function BlockEditorModal({ coord, block, mode, onClose, onSaveCreate, on
                 style={{ background: 'var(--bg-tertiary)', border: '1px solid var(--border-primary)', color: 'var(--text-primary)' }}
               />
             </div>
-            
+
             <p className="text-[10px] border px-3 py-2 rounded-lg font-mono break-all" style={{ background: 'var(--bg-primary)', borderColor: 'var(--border-primary)', color: 'var(--text-muted)' }}>
               Coord: {coord.lat.toFixed(5)}, {coord.lng.toFixed(5)}
             </p>
           </form>
 
           <div className="p-5 border-t mt-auto sticky bottom-0 z-10 w-full" style={{ background: 'var(--bg-secondary)', borderColor: 'var(--border-primary)' }}>
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               form="block-form"
-              disabled={isSaving} 
+              disabled={isSaving}
               className="w-full btn-green py-3 text-sm flex items-center justify-center shadow-lg shadow-emerald-500/20"
             >
               {isSaving ? 'Salvando...' : (mode === 'CREATE' ? 'Criar Bloco e Gerar Salas' : 'Salvar Alterações')}
@@ -282,6 +331,29 @@ export function BlockEditorModal({ coord, block, mode, onClose, onSaveCreate, on
                     </button>
                   ))
                 )}
+
+                <div className="ml-auto flex items-center gap-1 flex-shrink-0">
+                  <button
+                    onClick={() => addFloor.mutate()}
+                    disabled={addFloor.isPending}
+                    className="p-1.5 rounded-lg transition-all hover:scale-105 active:scale-95 disabled:opacity-50"
+                    style={{ background: 'var(--bg-tertiary)', border: '1px solid var(--border-primary)', color: 'var(--text-primary)' }}
+                    title="Adicionar andar"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                  </button>
+                  {selectedFloor && floors.length > 1 && (
+                    <button
+                      onClick={() => removeFloor.mutate(selectedFloor.id)}
+                      disabled={removeFloor.isPending}
+                      className="p-1.5 rounded-lg transition-all hover:scale-105 active:scale-95 text-rose-500 disabled:opacity-50"
+                      style={{ background: 'rgba(239,68,68,0.05)', border: '1px solid rgba(239,68,68,0.2)' }}
+                      title={`Excluir "${selectedFloor.name || selectedFloor.number + 'º Andar'}"`}
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
               </div>
 
               {/* Map/Konva Area */}
