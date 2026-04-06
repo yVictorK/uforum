@@ -1,107 +1,111 @@
-# UForum - Social Networking and Campus Integration Platform
+<h1 align="center">UForum</h1>
 
-UForum is a comprehensive digital ecosystem developed for the Federal University of Amazonas (UFAM). The platform integrates social interaction, geospatial campus auditing, and academic management into a unified, high-performance web application.
+<p align="center">
+  <img src="https://img.shields.io/badge/Status-Active-success?style=for-the-badge" alt="Status Badge"/>
+  <img src="https://img.shields.io/badge/Next.js-15-black?style=for-the-badge&logo=next.js" alt="Next JS Badge"/>
+  <img src="https://img.shields.io/badge/Spring_Boot-3.2-6DB33F?style=for-the-badge&logo=spring" alt="Spring Boot Badge"/>
+  <img src="https://img.shields.io/badge/License-MIT-blue?style=for-the-badge" alt="License Badge"/>
+</p>
 
----
+## Table of Contents
 
-## Project Overview
+- [Project Description](#project-description)
+- [Project Status](#project-status)
+- [Features and Demonstration](#features-and-demonstration)
+- [Application Access and Execution](#application-access-and-execution)
+- [Technologies Used](#technologies-used)
+- [Developers](#developers)
+- [License](#license)
 
-The UForum platform serves as a centralized hub for students, faculty, and administrative staff. It addresses the need for secure, institutional communication and provides tools for campus navigation and resource management.
+## Project Description
 
-### Primary Objectives
-- **Institutional Communication**: Facilitate structured discussions within academic communities.
-- **Geospatial Awareness**: Provide an interactive interface for campus navigation and event localization.
-- **Resource Management**: Enable a secure marketplace for academic materials.
-- **Administrative Oversight**: Implement a hierarchical moderation system for platform integrity.
+UForum is a comprehensive digital ecosystem developed specifically for the Federal University of Amazonas (UFAM). The platform seamlessly integrates social interaction, advanced geospatial campus auditing, and academic management into a unified, high-performance web application. 
 
----
+The application features a modern, premium "Liquid Glass" and Bento-inspired aesthetic, focusing on micro-interactions, responsive design, and intuitive user experiences. It is built to serve as a centralized hub for students, faculty, and administrative staff, providing tools for robust communication, campus navigation, and resource management.
 
-## Core Functionality
+## Project Status
 
-### 1. Social Networking Engine
-- **Community Architecture**: Course-specific and interest-based communities (e.g., IComp, FT, Medicine).
-- **Threaded Discussions**: Nested comment structures supporting high-density information exchange.
-- **Interactivity**: Asynchronous voting systems, post-saving mechanisms, and media integration.
+**Active and Evolving**
+The core functionality of the platform is fully developed and operational, including the social engine, interactive campus map, and hierarchical administration panel. Refinements, UI/UX optimizations, and advanced moderation features are actively being improved.
 
-### 2. Interactive Campus Mapping
-- **Mapbox Integration**: Custom-rendered campus tiles with Department-level precision.
-- **Event Localization**: Real-time correlation between campus events and geographic coordinates.
-- **Block Identification**: Detailed metadata for campus buildings and administrative sectors.
+## Features and Demonstration
 
-### 3. Administrative and Moderation Suite
-- **Role-Based Access Control (RBAC)**: Defined permissions for Administrators, Moderators, and Event Managers.
-- **Metrics Dashboard**: Real-time analytics for user engagement, content volume, and system activity.
-- **Content Governance**: Dedicated tools for user promotion, banning, and content moderation.
+### Social Networking Engine
+- **Community Architecture**: Supports course-specific and interest-based communities.
+- **Nested Discussions**: Hierarchical threaded discussions for clear communication.
+- **Dynamic Interactivity**: Includes real-time state synchronization for posts, upvotes, downvotes, and media attachments.
 
-### 4. Academic Marketplace
-- **Peer-to-Peer Transactions**: A secure listings platform for academic textbooks, lab equipment, and student services.
-- **Status Tracking**: Management of listing visibility (Available, Reserved, Sold).
+### Interactive Campus Mapping
+- **Geospatial Precision**: Interactive campus map integrated with custom tiles.
+- **Indoor Cartography**: Administrative tools allow for the creation and dynamic editing of building floors and rooms using advanced canvas-based rendering (Konva.js).
+- **Event Localization**: Pins and interactive markers to locate campus events directly on the map.
 
----
+### Administrative and Moderation Suite
+- **Role-Based Access Control (RBAC)**: Secure access management for Administrators and Moderators.
+- **Moderation Queue**: A complete dashboard to view, ignore, or resolve user reports, including the ability to permanently ban users or delete content.
+- **Content Governance**: Thematic consistency across the application natively supporting light and dark modes.
 
-## Technical Architecture
+### Academic Marketplace
+- **Peer-to-Peer Transactions**: A secure environment for students to list academic textbooks, lab equipment, and services.
+- **Listing Management**: Real-time status updates (Available, Reserved, Sold).
 
-### Frontend Layer
-- **Framework**: Next.js 15 (App Router Architecture)
+## Application Access and Execution
+
+### Prerequisites
+
+To run this project locally, ensure you have the following installed on your machine:
+- Docker Engine
+- Docker Compose
+- Git
+
+### Running the Application
+
+1. Clone the repository:
+```bash
+git clone https://github.com/your-username/uforum.git
+cd uforum
+```
+
+2. Execute the multi-container environment via Docker Compose:
+```bash
+docker compose up --build
+```
+*Alternatively, you can use the provided bash script `dev.sh` to initialize the environment.*
+
+3. Access the interfaces:
+- **Application Interface (Frontend)**: `http://localhost:3000`
+- **RESTful API Endpoint (Backend)**: `http://localhost:8080/api/v1`
+- **MailHog (SMTP Web Inspector)**: `http://localhost:8025`
+
+### Authentication Notes
+Registration requires valid institutional domains (`*.ufam.edu.br` or `*.alumni.ufam.edu.br`). During local development, password recovery flows and institutional emails are captured locally and can be inspected via the MailHog interface.
+
+## Technologies Used
+
+### Frontend Architecture
+- **Framework**: Next.js 15 (App Router)
+- **Library**: React
 - **State Management**: React Query (Server State) and Zustand (Client State)
-- **UI System**: Custom-built Dark Mode interface utilizing Framer Motion for state transitions.
-- **Type Safety**: TypeScript-first implementation.
+- **Styling**: Tailwind CSS and CSS Variables (Dual Theme Support)
+- **Animations**: Framer Motion
+- **Map Rendering**: React Leaflet, Konva.js
 
-### Backend Layer
-- **Framework**: Spring Boot 3.2 (Java 21 LTS)
-- **Security**: Spring Security with stateless JWT (JSON Web Token) implementation.
-- **Persistence**: Spring Data JPA with PostgreSQL.
-- **Migrations**: Serialized database versioning via Flyway.
+### Backend Architecture
+- **Language**: Java 21 LTS
+- **Framework**: Spring Boot 3.2
+- **Security**: Spring Security with Stateless JWT (JSON Web Tokens)
+- **Persistence**: Spring Data JPA
+- **Database**: PostgreSQL
+- **Migrations**: Flyway
 
-### Infrastructure
-- **Containerization**: Orchestrated via Docker Compose.
-- **SMTP Handling**: Integrated MailHog for local development and testing of automated recovery flows.
+### Infrastructure and Deployment
+- **Containerization**: Docker and Docker Compose
+- **Local Mail Testing**: MailHog
 
----
+## Developers
 
-## Security Protocols
-
-### Identity Verification
-- **Domain Restriction**: Registration is restricted to authorized `*.ufam.edu.br` and `*.alumni.ufam.edu.br` domains.
-- **Password Complexity**: Enforced character requirements, including mandatory special characters (`!@#$%*`).
-
-### Recovery Mechanisms
-- **Password Reset Flow**: Time-sensitive (30-minute expiry) secure tokens delivered via institutional email.
-- **Token Management**: Automated cleanup of expired recovery tokens to prevent database bloat.
-
----
-
-## Deployment and Configuration
-
-### Environment Setup
-The platform is designed to be deployed as a multi-container application.
-
-1. **Prerequisites**: Docker Engine and Docker Compose installed.
-2. **Execution**: Run the following command from the project root:
-   ```bash
-   docker compose up --build
-   ```
-
-### Local Development Access
-- **Application Interface**: `http://localhost:3000`
-- **RESTful API Endpoint**: `http://localhost:8080/api/v1`
-- **SMTP Web Inspector**: `http://localhost:8025`
-
-### Configuration of External Services
-For production email delivery, environment variables in `docker-compose.yml` must be configured with valid SMTP credentials (e.g., Gmail App Passwords).
-
----
-
-## Development and Contributions
-
-The project follows a standard modular architecture. Source code is organized into `uforum-backend` and `uforum-frontend` directories.
-
-### Documentation Placeholders
-[Insert Video Demonstration of Social Engine Here]
-[Insert Video Demonstration of Interactive Map Here]
-[Insert Video Demonstration of Admin Dashboard Here]
-
----
+- **Victor Kossmann** - Full Stack Developer
 
 ## License
-This project is licensed under the MIT License.
+
+This project is licensed under the MIT License. See the LICENSE file for details.
