@@ -30,24 +30,43 @@ The core functionality of the platform is fully developed and operational, inclu
 
 ## Features and Demonstration
 
+### Home and Authentication
+A seamless entry point featuring a dynamic hero section and institutional authentication flow.
+
+![Home and Login Demo](./assets/home-login.gif)
+
 ### Social Networking Engine
 - **Community Architecture**: Supports course-specific and interest-based communities.
 - **Nested Discussions**: Hierarchical threaded discussions for clear communication.
 - **Dynamic Interactivity**: Includes real-time state synchronization for posts, upvotes, downvotes, and media attachments.
+
+![Feed and Communities Demo](./assets/feed-communities.gif)
+
+### Events and Academic Marketplace
+- **Peer-to-Peer Transactions**: A secure environment for students to list academic textbooks, lab equipment, and services.
+- **Listing Management**: Real-time status updates (Available, Reserved, Sold).
+- **Campus Events**: Integrated event discovery to keep the community informed.
+
+![Events and Marketplace Demo](./assets/events-marketplace.gif)
 
 ### Interactive Campus Mapping
 - **Geospatial Precision**: Interactive campus map integrated with custom tiles.
 - **Indoor Cartography**: Administrative tools allow for the creation and dynamic editing of building floors and rooms using advanced canvas-based rendering (Konva.js).
 - **Event Localization**: Pins and interactive markers to locate campus events directly on the map.
 
+![Map and Building Interactivity Demo](./assets/map-blocks.gif)
+
+### User Profile
+A centralized dashboard for users to manage their settings, view recent activity, and customize their platform experience.
+
+![User Profile Demo](./assets/profile.gif)
+
 ### Administrative and Moderation Suite
 - **Role-Based Access Control (RBAC)**: Secure access management for Administrators and Moderators.
 - **Moderation Queue**: A complete dashboard to view, ignore, or resolve user reports, including the ability to permanently ban users or delete content.
 - **Content Governance**: Thematic consistency across the application natively supporting light and dark modes.
 
-### Academic Marketplace
-- **Peer-to-Peer Transactions**: A secure environment for students to list academic textbooks, lab equipment, and services.
-- **Listing Management**: Real-time status updates (Available, Reserved, Sold).
+![Admin Panel Demo](./assets/admin-panel.gif)
 
 ## Application Access and Execution
 
