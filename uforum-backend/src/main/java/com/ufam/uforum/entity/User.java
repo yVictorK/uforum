@@ -45,10 +45,10 @@ public class User {
     private Integer age;
     private String neighborhood; // bairro
 
-    @Column(name = "profile_picture_url")
+    @Column(name = "profile_picture_url", columnDefinition = "TEXT")
     private String profilePictureUrl;
 
-    @Column(name = "banner_url")
+    @Column(name = "banner_url", columnDefinition = "TEXT")
     private String bannerUrl;
 
     @Column(name = "whatsapp_number", length = 20)

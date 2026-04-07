@@ -5,7 +5,7 @@ import java.util.UUID;
 public record CreatePostRequest(
     @Size(max = 300) String title,
     @NotBlank @Size(min = 1, max = 10000) String content,
-    @URL(message = "URL de imagem inválida") String imageUrl,
+    @URL(message = "URL de imagem inválida") @Size(max = 2048, message = "A URL não pode exceder 2048 caracteres") String imageUrl,
     UUID communityId,
     UUID parentId
 ) {}

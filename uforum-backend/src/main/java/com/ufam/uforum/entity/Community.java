@@ -26,10 +26,10 @@ public class Community {
     @Column(nullable = false, length = 500)
     private String description;
 
-    @Column(name = "banner_url")
+    @Column(name = "banner_url", columnDefinition = "TEXT")
     private String bannerUrl;
 
-    @Column(name = "icon_url")
+    @Column(name = "icon_url", columnDefinition = "TEXT")
     private String iconUrl;
 
     @Column(name = "is_private", nullable = false)
