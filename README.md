@@ -1,4 +1,4 @@
-<h1 align="center">UForum</h1>
+![login-uforum (1)](https://github.com/user-attachments/assets/be37152a-8503-4081-bdba-33187bfbd79d)<h1 align="center">UForum</h1>
 
 <p align="center">
   <img src="https://img.shields.io/badge/Status-Active-success?style=for-the-badge" alt="Status Badge"/>
@@ -33,40 +33,35 @@ The core functionality of the platform is fully developed and operational, inclu
 ### Home and Authentication
 A seamless entry point featuring a dynamic hero section and institutional authentication flow.
 
-![Home and Login Demo](./assets/home-login.gif)
+![Home and Login Demo](https://github.com/user-attachments/assets/fba60796-39dd-4bc8-87b1-c3b28f9226f7)
 
 ### Social Networking Engine
 - **Community Architecture**: Supports course-specific and interest-based communities.
 - **Nested Discussions**: Hierarchical threaded discussions for clear communication.
 - **Dynamic Interactivity**: Includes real-time state synchronization for posts, upvotes, downvotes, and media attachments.
 
-![Feed and Communities Demo](./assets/feed-communities.gif)
+![Feed and Communities Demo](https://github.com/user-attachments/assets/5b96da2e-8764-408e-b043-4d85dd0f600c)
 
 ### Events and Academic Marketplace
 - **Peer-to-Peer Transactions**: A secure environment for students to list academic textbooks, lab equipment, and services.
 - **Listing Management**: Real-time status updates (Available, Reserved, Sold).
 - **Campus Events**: Integrated event discovery to keep the community informed.
 
-![Events and Marketplace Demo](./assets/events-marketplace.gif)
+![Events and Marketplace Demo](https://github.com/user-attachments/assets/ac6e1b8d-813b-4757-b628-9a1a061ba7d9)
 
 ### Interactive Campus Mapping
 - **Geospatial Precision**: Interactive campus map integrated with custom tiles.
 - **Indoor Cartography**: Administrative tools allow for the creation and dynamic editing of building floors and rooms using advanced canvas-based rendering (Konva.js).
 - **Event Localization**: Pins and interactive markers to locate campus events directly on the map.
 
-![Map and Building Interactivity Demo](./assets/map-blocks.gif)
-
-### User Profile
-A centralized dashboard for users to manage their settings, view recent activity, and customize their platform experience.
-
-![User Profile Demo](./assets/profile.gif)
+![Map and Building Interactivity Demo](https://github.com/user-attachments/assets/38267a93-ff8f-4e27-a2fa-3cd7977b4631)
 
 ### Administrative and Moderation Suite
 - **Role-Based Access Control (RBAC)**: Secure access management for Administrators and Moderators.
 - **Moderation Queue**: A complete dashboard to view, ignore, or resolve user reports, including the ability to permanently ban users or delete content.
 - **Content Governance**: Thematic consistency across the application natively supporting light and dark modes.
 
-![Admin Panel Demo](./assets/admin-panel.gif)
+![Admin Panel Demo](https://github.com/user-attachments/assets/49bf970e-2209-433c-b073-63d96d114c22)
 
 ## Application Access and Execution
 
